@@ -9,7 +9,7 @@ for (const file of [".env.local", ".env"]) {
   if (existsSync(path)) process.loadEnvFile(path);
 }
 
-const code = await runProof({
+void runProof({
   env: process.env,
   print: (line) => console.log(line),
   getModel: () => getModel(process.env),
@@ -17,5 +17,4 @@ const code = await runProof({
   sleep: (ms) => new Promise((done) => setTimeout(done, ms)),
   pollEveryMs: 5_000,
   approvalTimeoutMs: 10 * 60 * 1000,
-});
-process.exit(code);
+}).then((code) => process.exit(code));

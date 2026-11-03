@@ -286,7 +286,7 @@ export function Referee({ connection, catalog, clauses, limits, returned }: {
       const result = await call<{ receipt: Receipt; record: CaseRecord }>("/api/refunds", { method: "POST", body: JSON.stringify({ approvalToken: caseView.approvalToken, approved: true }) });
       setReceipt(result.receipt);
       setRecord(result.record);
-      setCaseView({ ...caseView, approvalToken: null });
+      setCaseView({ ...caseView, record: result.record, approvalToken: null });
     } catch (error) {
       setRefundError(asApiError(error));
     } finally {
