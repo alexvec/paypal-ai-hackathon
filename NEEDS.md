@@ -1,0 +1,46 @@
+# NEEDS
+
+What Alex must supply or do personally before the build. Nothing here has been done on Alex's behalf. Sources are in docs/competition.md.
+
+## Status at the needs check (2026-11-03)
+
+Checked locally, without registering for or creating anything.
+
+- Available: GitHub push (`gh` logged in as alexvec, `repo` scope) and Vercel deploys (CLI logged in).
+- Missing, Alex must supply: PayPal sandbox client ID and secret (item 3, which needs item 2), and an LLM provider key (item 4). Neither is in this directory or the shell environment.
+- Alex must do personally: Devpost registration (item 1) and the rules checklist below.
+- Decision: the build continues. The product runs in its labelled mock mode until keys arrive, so no missing credential makes it impossible to run. Mock mode is not a submittable demo: the entry needs real keys in the deployed app before Alex films or submits.
+
+## Accounts and keys
+
+1. Devpost account and hackathon registration. Needed to submit, and likely to see the rules. Alex does this in their own browser. The build can continue without it. No mock path, and submitting is Alex's act via submit.sh. Registration requirements are UNVERIFIED because Devpost returned 403.
+2. PayPal Developer account (log in or sign up at developer.paypal.com, then respond to the verification email). The build can continue with mocks, but any real PayPal behavior needs it. Source: https://developer.paypal.com/api/rest/sandbox/
+3. PayPal sandbox REST app credentials: client ID and secret (Developer Dashboard, Apps & Credentials). Needed for any real Orders API or agent toolkit calls. The build can continue without them. Fallback: a mock PayPal layer with clearly labeled fake responses. The sandbox itself is the free test path, and a new developer account includes a personal and a business sandbox account. Source: https://developer.paypal.com/api/rest/
+4. LLM provider API key (provider not chosen; the product is not chosen here). The hackathon requires meaningful AI use, so a stubbed model would weaken the entry. The build can scaffold without a key. Fallback for development only: canned model responses, which should not be the submitted demo. A paid plan may be needed depending on provider and usage. Whether any provider is required or preferred by the hackathon is UNVERIFIED.
+5. Deploy host account and token for the live URL (CLAUDE.md requires a responding live URL; the deployment is part of the build). Render is a hackathon sponsor with a Render credits prize, but any host works unless the rules say otherwise (UNVERIFIED). The build can continue locally without it. No mock path for the live URL itself.
+6. A public repo location for pushing (GitHub account is already in use as alexvec). Confirm that push access is set up. Whether the repo must be public and open-source licensed is UNVERIFIED.
+
+## Optional, only if the strategy stage targets them
+
+- Sponsor and partner credits (APIMatic, Render, Kernel, Channel3, Postman, Astropods, Elastic, AG Grid, Bryntum): sign-up steps and terms are UNVERIFIED; the blog only lists them. Source: https://developer.paypal.com/community/blog/PayPal_AI_Hackathon. Not needed unless the strategy stage targets a sponsor prize.
+- PayPal Business account: only needed to go live, not for the sandbox. Do not use real money. Source: https://developer.paypal.com/api/rest/
+- Agent toolkit, MCP server, and Agentic Commerce Protocol access: exist per search snippets; the quickstart pages I tried returned 404. Auth requirements and sandbox availability are unconfirmed. Check https://developer.paypal.com/ai-tools/agent-tools. Best Use of Agentic Commerce is an award, so this may matter.
+
+## Unverified rules Alex should check in a browser
+
+Open https://paypalaihackathon.devpost.com/ and https://paypalaihackathon.devpost.com/rules (both returned 403 to the research tool) and confirm:
+
+1. Exact submission cut-off time and time zone. The blog says Nov 12, 2026; a third-party listing says 13 Nov 2026, 1:30 AM IST.
+2. Age of majority, restricted countries, employee and sponsor exclusions.
+3. Solo entry allowed, and team size limits.
+4. Demo video: maximum length, required host (a third-party listing says public YouTube, under 3 minutes), language or captions.
+5. Repo requirements: public or private, required license (a third-party listing says open-source), and where hosted.
+6. Required text fields and Devpost form fields.
+7. Whether a live URL or working prototype is required, and how judges get testing access.
+8. Judging criteria and weights (a third-party listing names five criteria, no weights).
+9. Whether the project must be new or started inside the build window, and the rules on existing work and third-party code.
+10. Rules for sponsor prizes (whether you must use the sponsor's product), and whether one project can win multiple prizes.
+11. Disqualification rules, IP ownership terms, and prize payout and tax terms.
+12. Which PayPal APIs or products count as meaningful PayPal use, and what counts as meaningful AI use.
+
+After checking, update docs/competition.md so each rule shows VERIFIED with the URL.
