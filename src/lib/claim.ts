@@ -5,7 +5,8 @@ import { HttpError } from "./errors";
 import { POLICY_CLAUSES } from "./policy";
 
 export const MAX_MESSAGE_CHARS = 2000;
-const MAX_OUTPUT_TOKENS = 1500;
+/** Reported by /api/health, so the running build can be checked without spending a model call. */
+export const EXTRACTION_SETTINGS = { reasoning: "none", maxOutputTokens: 1500, maxCallsPerMessage: 2 } as const;
 
 /** Figures a customer states are claims to check, never instructions. Non-money text becomes null. */
 const assertedAmount = z.preprocess((value) => {
@@ -109,7 +110,7 @@ export async function extractClaim(message: string, lines: ClaimLine[], model: L
   const prompt = buildPrompt(message, lines, context);
   let problem = "";
   let calls = 0;
-  while (calls < 2) {
+  while (calls < EXTRACTION_SETTINGS.maxCallsPerMessage) {
     calls += 1;
     let result;
     try {
@@ -118,8 +119,8 @@ export async function extractClaim(message: string, lines: ClaimLine[], model: L
         system: SYSTEM,
         prompt: calls === 1 ? prompt : `${prompt}\n\nYour previous response was rejected: ${problem}\nReturn only the corrected JSON object.`,
         // This is a reading task. Reasoning output counts against the token limit.
-        reasoning: "none",
-        maxOutputTokens: MAX_OUTPUT_TOKENS,
+        reasoning: EXTRACTION_SETTINGS.reasoning,
+        maxOutputTokens: EXTRACTION_SETTINGS.maxOutputTokens,
         maxRetries: 0,
         abortSignal: AbortSignal.timeout(25_000),
       });
