@@ -1,6 +1,6 @@
 # NEEDS
 
-The agent creates the accounts and keys below. Alex steps in only for a payment card, government ID, a tax form, or a code he must type himself. Do not submit the entry.
+The agent creates the accounts and keys below, and redeems every partner credit or promo code in docs/competition.md before any payment card. The PayPal blog lists free credits from APIMatic, Render, Kernel, Channel3, Postman, Astropods, Elastic, AG Grid, and Bryntum; their amounts and steps were unverified and must be read on the partner pages before they are skipped. Alex steps in only for a payment card, government ID, a tax form, or a code he must type himself. Do not submit the entry.
 
 What was checked on 2026-11-03, before this rule: GitHub and Vercel were already authenticated. PayPal sandbox keys and an LLM key were missing, and nothing had been created yet.
 
@@ -8,7 +8,7 @@ What was checked on 2026-11-03, before this rule: GitHub and Vercel were already
 
 - Available: GitHub push (`gh` logged in as alexvec, `repo` scope) and Vercel deploys (CLI logged in).
 - Tried and not done: the PayPal sandbox app and joining the Devpost hackathon. Both need the browser, and the Chrome extension reported no connected browser on three attempts, with Chrome running.
-- Model access: being tried through Vercel AI Gateway on Alex's own Vercel team, with no pasted key. See the review packet for the result.
+- Model access: tried through Vercel AI Gateway on Alex's own Vercel team, with no pasted key. The gateway refuses calls until a card is on file: "AI Gateway requires a valid credit card on file to service requests." No card was added, so the model stays on labelled canned output.
 - Limit on the agent: it does not create accounts or type passwords in the browser, even when asked. An account that does not exist yet, or a sign-in screen, is Alex's step.
 - Decision: the build continues in labelled mock mode. Mock mode is not a submittable demo: the entry needs real keys in the deployed app before Alex films or submits.
 
@@ -17,6 +17,7 @@ What was checked on 2026-11-03, before this rule: GitHub and Vercel were already
 1. Reconnect the Claude extension in Chrome (https://claude.ai/chrome, signed in to the same account as Claude Code) and resume the director. If developer.paypal.com and Devpost are already signed in, the agent can then create the sandbox app and join the hackathon.
 2. Or do it by hand. At https://developer.paypal.com/dashboard/applications/sandbox, sign in or sign up, create a REST app, and put these in the entry's `.env`, using the variable names in `.env.example`: sandbox client ID and secret. Then resume the director, which adds them to Vercel and runs a real sandbox invoice.
 3. Join the hackathon at https://paypalaihackathon.devpost.com/ if the agent could not, and work through the rules checklist below.
+4. Add a card for the model: https://vercel.com/d?to=%2F%5Bteam%5D%2F%7E%2Fai%3Fmodal%3Dadd-credit-card (this unlocks the gateway's free credits, per its error message). Then check `/api/model-check` on the live URL. No redeploy is expected. Alternatively, supply another model key, which would need a code change in `src/lib/llm.ts`.
 
 ## Accounts and keys
 
