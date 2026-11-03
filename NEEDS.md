@@ -1,6 +1,6 @@
 # NEEDS
 
-Status as of 2026-11-03. The invoice-desk product is dropped; this is a rebuild.
+Status as of 2026-11-03. The invoice-desk product is dropped and removed. Refund Referee is built and deployed, and has not been run against PayPal.
 
 ## Current facts
 
@@ -15,10 +15,14 @@ Status as of 2026-11-03. The invoice-desk product is dropped; this is a rebuild.
 
 Sign in to, or create, the PayPal developer account at https://developer.paypal.com in Chrome (an existing PayPal login works, per the rules page). Complete any verification email or captcha. After that, the agent creates the sandbox REST app, writes the client ID and secret to `.env`, and sets them on Vercel.
 
+Until then, no real PayPal call can run. The build is code-complete but unproven against PayPal. `npm run proof` stops with `not connected: PAYPAL_CLIENT_ID missing`.
+
 ## After that, the agent does
 
 - Create the sandbox REST app and read the default sandbox business and personal accounts.
-- Check whether Invoicing, Payouts, Disputes, Subscriptions and Transaction Search work on the sandbox business account, and record the result in docs/competition.md, but only for the capabilities the chosen product uses.
+- Set `PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_SECRET` in `.env` and on the Vercel project (Production), and redeploy. No code change is needed.
+- Run `npm run proof`. Its one human step is signing in as the sandbox buyer to approve the order, within 10 minutes. Fix whatever it shows, and apply the kill rule in docs/win-plan.md if capture or refund cannot be made to work.
+- Walk docs/demo-path.md on the live URL, and tick the build box in STATE.md once a real sandbox refund has run.
 - Read a partner's own page before claiming any partner credit, and only if the chosen product uses that partner.
 
 ## Alex's acts, not the agent's

@@ -1,80 +1,118 @@
-# Billing Desk Agent
+# Refund Referee
 
-A small-business owner pastes the messy thing that means "I'm owed money": a chat message, an email thread, a job note, a photo of a handwritten tally. An AI agent turns it into a PayPal invoice through the PayPal agent toolkit, holds it behind a human approval gate, sends it, then watches the invoice status and chases or reconciles it.
+A customer writes to a small online shop asking for money back. Refund Referee reads the message, checks the story against what PayPal recorded, works out what the shop owes under its policy, and refunds exactly that after the owner approves.
 
 Live: https://paypal-ai-hackathon-phi.vercel.app
 
-Entry for the PayPal AI Hackathon. MIT licensed.
+Entry for the PayPal AI Hackathon. MIT licensed. Working title. The shop, its catalogue and its policy are fictional, and there are no customers, usage figures or testimonials behind this.
 
-## What runs for real today
+## What has run for real
 
-Read this first. Each integration chooses its mode from environment variables at runtime, and the page always says which mode it is in.
+Read this first.
 
-| Integration | Current state of the deployed app |
+| Part | State |
 |---|---|
-| PayPal | **Mock.** PayPal sandbox keys are not configured yet, so a red banner says "MOCK PayPal. No request was sent to PayPal. Invoice ids are fake." The toolkit path below is covered only by tests against stubbed HTTP. It has never run against the real sandbox. |
-| AI model | **Live.** Production uses `deepseek/deepseek-v4.1-flash` through Vercel AI Gateway, set with `LLM_MODEL`, and the page banner reads "Live AI". `GET /api/model-check` reports the state from a real call. Text extraction has run on this model. The chase agent and image input have only run against a stubbed model so far. If a model call fails, the page falls back to "CANNED MODEL OUTPUT, not live AI." and only the fictional sample can run. |
+| PayPal sandbox | **Not connected, and never run.** No sandbox keys exist yet. **No real PayPal call has been made.** Every PayPal path is covered only by tests against a stubbed HTTP layer in `tests/`. On the live URL, these routes answer `503 NOT_CONNECTED` and name the missing variables. |
+| AI model | **Real.** `gateway/deepseek/deepseek-v4.1-flash` through Vercel AI Gateway, on `POST /api/extract`. That route reads a message and validates the JSON. It proves the model part only: no PayPal record is read and no refund is decided. |
+
+There is no mock mode and no canned output. When a credential is missing, the app and `npm run proof` say "not connected" and name the variable.
 
 ## How it works
 
-1. Input: paste text or add an image.
-2. The model extracts client, line items, quantities, dates and ambiguities, and matches lines to your rate card. Code assigns prices from the rate card, never the model. An unmatched line is flagged, not priced.
-3. The page shows the proposal with the source phrases highlighted, and questions for what could not be resolved.
-4. Approval gate. Nothing reaches PayPal without a click. Limits on amount and currency are enforced in server code, with tests, and not in a prompt.
-5. On approval the app calls `create_invoice`, then reads the invoice back with `get_invoice`, and shows the id and status PayPal returned. Sending is a second approval.
-6. The chase agent is a model in a tool loop. It has read tools and propose tools only: no tool it holds can write to PayPal. It reads the invoice, then chooses whether to propose a reminder, propose recording a payment, ask a question or do nothing. The tool calls are shown. Code decides whether an invoice is overdue and blocks a reminder that is not due or a payment above what is owed.
+1. **Test purchase.** The app creates an itemised order in the PayPal sandbox from a fixed catalogue. The buyer approves it on PayPal, and the app captures it.
+2. **Message.** You write what the customer said, in any wording or language.
+3. **Model.** One call returns JSON: which lines are claimed, the outcome wanted, the reason, any amount or date stated, the policy clauses that apply, and a draft reply. The schema has no refund amount field. If the JSON fails validation, there is one retry, and then the case goes to "needs review" with no refund proposed.
+4. **Code.** `src/lib/decide.ts` is a pure function from PayPal's record and the validated claim to a decision: refund in full, partial refund, deny, ask the customer, or escalate. It computes the amount from PayPal's line prices and tax, caps it at what PayPal shows left, applies the time windows and per-case limit, ignores clause ids that do not exist, and flags where the story and the record disagree.
+5. **Approval.** The server signs the proposal. The refund route takes only that signed proposal and an explicit approval, re-reads PayPal, re-checks the numbers, then refunds with a `PayPal-Request-Id`.
+6. **Read-back.** The receipt shows the refund id, the status read back, the debug ids and the raw responses, with buyer and merchant identity removed. Which units a refund covered is stored in the refund's `custom_id` at PayPal, so a second claim is limited by PayPal's data and not by this app's memory.
 
-## PayPal toolkit tools called
+## PayPal calls
 
-All through `@paypal/agent-toolkit` 1.11.0, in `src/lib/paypal/toolkit.ts`.
+All in `src/lib/paypal/client.ts`, against `https://api-m.sandbox.paypal.com`. Paths checked on 2026-11-03 against PayPal's published OpenAPI schemas. Not yet run against the sandbox.
 
-| Tool | Used for | Real sandbox status |
-|---|---|---|
-| `create_invoice` | Approved draft | Not run yet |
-| `get_invoice` | Status read back, agent read tool | Not run yet |
-| `list_invoices` | Agent context | Not run yet |
-| `send_invoice` | Approved send | Not run yet |
-| `send_invoice_reminder` | Approved reminder | Not run yet |
-| `record_payment_for_invoice` | Approved "they paid cash" | Not run yet |
+| Call | Used for |
+|---|---|
+| `POST /v1/oauth2/token` | Client credentials token |
+| `POST /v2/checkout/orders` | Create the itemised order |
+| `GET /v2/checkout/orders/{id}` | Approval status, line items, and the refund list |
+| `POST /v2/checkout/orders/{id}/capture` | Capture after buyer approval |
+| `GET /v2/payments/captures/{capture_id}` | Capture amount and status |
+| `POST /v2/payments/captures/{capture_id}/refund` | The refund |
+| `GET /v2/payments/refunds/{refund_id}` | Read the refund back |
 
-Not used: `get_merchant_insights` throws in sandbox in this toolkit version. `create_product` and `list_products` are not used because `create_product` has no price, so prices stay in the app's rate card. `generate_invoice_qr_code` is not wired in. The Agentic Commerce Protocol is not implemented.
+The app does not implement PayPal's Agentic Commerce Protocol, and it does not use `@paypal/agent-toolkit`: a thin REST client keeps the host fixed in code.
 
-Known toolkit limits, read from the installed package:
+## Run it
 
-- It caches its access token and never refreshes it, so the app builds a toolkit per request.
-- `create_invoice` has no due date, so "overdue" means N days after the invoice date, a number the owner sets. A due date from PayPal wins if one is present.
-- `create_invoice` returns a link rather than the invoice, so the app reads the id from the link and then calls `get_invoice`.
-- It calls `api.sandbox.paypal.com`, not `api-m.sandbox.paypal.com`.
-
-Unconfirmed against the real sandbox: whether a default app has the invoicing scope, whether `recipient_view_url` is returned, how a sandbox payer reaches a payable invoice, and how `record_payment_for_invoice` changes the status.
-
-## Run it locally
-
-Needs Node 20.9 or newer.
+Needs Node 20.12 or later.
 
 ```
 npm install
+cp .env.example .env
 npm run dev
 ```
 
-Open http://localhost:3000. With no configuration it runs in labelled mock and canned modes, and "Load sample" works end to end. Nothing else is needed to try it.
+| Variable | Needed for |
+|---|---|
+| `PAYPAL_CLIENT_ID` | Everything that touches PayPal |
+| `PAYPAL_CLIENT_SECRET` | Everything that touches PayPal. Also keys the app's signatures |
+| `AI_GATEWAY_API_KEY` | The model. Locally, a `VERCEL_OIDC_TOKEN` from `vercel env pull` also works |
+| `LLM_MODEL` | Optional. Defaults to `deepseek/deepseek-v4.1-flash` |
 
-To leave those modes, copy `.env.example` to `.env.local`.
+## Commands
 
-- PayPal: set `PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_SECRET` from a PayPal sandbox app. The app has no path to live PayPal.
-- Model: link a Vercel project and run `vercel env pull` to get an OIDC token for Vercel AI Gateway (valid about 12 hours), or set `AI_GATEWAY_API_KEY`. A direct `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` also works. `LLM_MODEL` overrides the code default, `anthropic/claude-haiku-5.5`. The deployed app sets it to `deepseek/deepseek-v4.1-flash`.
-- Policy: `POLICY_MAX_INVOICE_AMOUNT` and `POLICY_ALLOWED_CURRENCIES`. Defaults are 5000 and USD, EUR, GBP.
+| Command | What it does |
+|---|---|
+| `npm run proof` | The real end-to-end check. See below |
+| `npm test` | Unit and route tests, with PayPal's HTTP layer and the model stubbed |
+| `npm run typecheck` | TypeScript |
+| `npm run test:ui` | Renders the case, proposal and receipt screens in a browser, with API responses stubbed |
+| `npm run demo:walk` | Walks docs/demo-path.md against real services, for recording |
 
-## Checks
+### npm run proof
+
+In order: (a) one model call checked against the schema, (b) OAuth token, (c) create an order and print the approval link, (d) poll until `APPROVED`, for up to 10 minutes while you sign in as the sandbox buyer, (e) capture, (f) refund 1.00 with a request id, (g) read the refund back.
+
+It exits non-zero on any failure, with the failing status and debug id. On a run past the credential check, it writes a redacted log to `proof-logs/`. It never falls back to anything. Today it prints:
 
 ```
-npm test            # unit and route tests, including the real toolkit code against stubbed HTTP
-npm run typecheck
-npm run demo:walk   # Playwright walk of docs/demo-path.md
+Refund Referee proof. PayPal host: https://api-m.sandbox.paypal.com (fixed in code).
+not connected: PAYPAL_CLIENT_ID missing
+not connected: PAYPAL_CLIENT_SECRET missing
+Stopped before any call. No model call, no PayPal call, no result. Put the variables in .env. See .env.example.
 ```
 
-`GET /api/health` is liveness and makes no outside call. `GET /api/model-check` makes one small real model call, cached per instance.
+## Public URL safety
 
-## Sample data
+The live URL is public, and its model calls are paid for. With real sandbox keys on, an anonymous visitor can:
 
-The sample note and the rate card are fictional and labelled as such. This entry claims no customers, usage numbers or benchmark results.
+- create sandbox orders from the fixed catalogue, choosing quantities only, up to $100.00 an order
+- approve an order, if they have a sandbox buyer login
+- capture, read, and open cases on orders **their own browser created**
+- send messages to the model, up to 2,000 characters each
+- approve a refund on their own order, for the amount code computed, up to $50.00 a case
+
+They cannot:
+
+- reach live PayPal: the host is a constant, and no variable, header or field changes it
+- pass a capture id or an amount: the refund route rejects any extra field
+- touch an order this app did not create: each order carries a signature in its PayPal `custom_id`, checked on PayPal's copy
+- touch another browser's order: each order is bound to an HttpOnly cookie
+- edit or replay an approval into something else: it is signed, expires in 15 minutes, and is re-checked against PayPal
+- write text that reaches a payer: `note_to_payer` is fixed text
+- see the client secret or token: neither is returned or logged, and raw responses have buyer and merchant identity removed
+
+### Known limits
+
+- **Rate limits and the daily refund cap are in memory, per serverless instance.** They reset on a cold start, and several instances each keep their own count. Model calls are limited to 5 per address per 10 minutes and 40 per instance per hour, with at most 2 calls per message and 900 output tokens per call. This slows abuse. It is not a spending limit, which only the gateway account can set.
+- **Any visitor can approve their own test refund.** That is the demo. The approval gate proves the model cannot move money. It does not model a shop's login, because there is none. A real shop would need one.
+- **The owner cookie is the only proof of ownership.** Clearing it loses access to those orders.
+- **A race between two approvals** on one order, read at the same moment, could both pass the item check. PayPal still refuses anything above the capture's balance.
+
+## Built during the submission period
+
+All code here was written in the submission period. The repository first held an invoice desk, which was replaced by this product before any entry was made: Git history shows both. Nothing from the invoice product remains except the scaffold, money helper and rate-limit pattern.
+
+## AI tools
+
+The model above is the AI in the product. This code was written with Claude Code, under Alex Veciana Belmonte's direction.

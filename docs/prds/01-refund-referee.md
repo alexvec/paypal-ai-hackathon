@@ -12,17 +12,25 @@ The owner of a small online shop that takes PayPal checkout and answers refund e
 
 ## Partner capability that does the work
 
-PayPal Orders v2 and Payments v2 on the sandbox (host `api-m.sandbox.paypal.com`). Calls:
+PayPal Orders v2 and Payments v2 on the sandbox (host `api-m.sandbox.paypal.com`). Paths and fields below were checked on 2026-11-03 against PayPal's published OpenAPI schemas (https://developer.paypal.com/api/orders/v2/schema.json, https://developer.paypal.com/api/payments/v2/schema.json) and the token path against https://developer.paypal.com/api/rest/authentication/. Documented is not the same as run: no call has been made to the real sandbox yet. Calls:
 
 1. `POST /v1/oauth2/token` (client_credentials).
-2. `POST /v2/checkout/orders` with `intent: CAPTURE`, itemised `purchase_units` and a `payment_source.paypal.experience_context` return URL. Returns order id and approval link. (Orders v2 create: VERIFIED. Item/breakdown details: ASSUMPTION.)
-3. `GET /v2/checkout/orders/{id}` to see `APPROVED`.
+2. `POST /v2/checkout/orders` with `intent: CAPTURE`, itemised `purchase_units`, a `custom_id`, and a `payment_source.paypal.experience_context` return URL. Returns order id and approval link. Sends `Prefer: return=representation`.
+3. `GET /v2/checkout/orders/{id}` to see `APPROVED`, and for `purchase_units[].payments.refunds[]`.
 4. `POST /v2/checkout/orders/{id}/capture`.
-5. `GET /v2/payments/captures/{capture_id}` for amount, status, refunds so far (path: ASSUMPTION).
-6. `POST /v2/payments/captures/{capture_id}/refund` with computed `amount`, `note_to_payer`, and a `PayPal-Request-Id` header (path: ASSUMPTION; toolkit `create_refund` VERIFIED as fallback).
-7. `GET /v2/payments/refunds/{refund_id}` to confirm (toolkit `get_refund` VERIFIED).
+5. `GET /v2/payments/captures/{capture_id}` for amount and status.
+6. `POST /v2/payments/captures/{capture_id}/refund` with computed `amount`, `note_to_payer`, `custom_id`, a `PayPal-Request-Id` header and `Prefer: return=representation`.
+7. `GET /v2/payments/refunds/{refund_id}` to confirm.
 
-Toolkit `@paypal/agent-toolkit` 1.11.0 is used where its `get_order`, `pay_order`, `create_refund`, `get_refund` fit; thin REST client elsewhere. No Invoicing, Subscriptions, Payouts, Disputes or Webhooks dependency (a webhook receipt for `PAYMENT.CAPTURE.REFUNDED` is a stretch goal only, with GET refund as the working path).
+The paths in 5, 6 and 7, marked ASSUMPTION in the first draft, match the schema. Three corrections from the same check:
+
+- **Refund list.** The capture resource has a status (`PARTIALLY_REFUNDED`, `REFUNDED`) but no list of refunds. The list is on the order, at `purchase_units[].payments.refunds[]`, so "refunds so far" comes from GET order, cross-checked against GET capture's status.
+- **Approval link.** The Orders v2 sample for an order created with `payment_source.paypal` returns status `PAYER_ACTION_REQUIRED` and a link with `rel: payer-action`, not `approve`. The app accepts either.
+- **Full responses.** `Prefer` defaults to `return=minimal`: id, status and links only. Calls that need the full resource send `Prefer: return=representation`.
+
+Still unconfirmed until a real sandbox run: that PayPal echoes `custom_id` on refunds listed on an order (the schema has the field), and that the return redirect carries `?token=<order id>`. If a refund has no readable `custom_id`, the app escalates rather than guessing. If the redirect fails, a capture button covers it.
+
+The app uses a thin REST client, not `@paypal/agent-toolkit`. The toolkit's environment is selectable from configuration, and the public URL requires a sandbox host that nothing can change. No Invoicing, Subscriptions, Payouts, Disputes or Webhooks dependency (a webhook receipt for `PAYMENT.CAPTURE.REFUNDED` is a stretch goal only, with GET refund as the working path).
 
 ## What the model does that code cannot
 

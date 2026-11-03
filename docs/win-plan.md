@@ -69,15 +69,21 @@ Tie-break follows that same order, so Technological Implementation evidence gets
 
 ## Feasibility: dependencies and day-1 fallbacks
 
-The chosen product depends on none of the capabilities docs/competition.md marks unverified (Payouts, Disputes, Subscriptions, Transaction Search, Invoicing, Webhooks). It does depend on Orders and Payments behaviour that I have not run. In competition.md the toolkit tool names `get_order`, `pay_order`, `create_refund`, `get_refund` and the Orders v2 endpoint list are VERIFIED; the exact REST paths for capture read and refund (`GET /v2/payments/captures/{id}`, `POST /v2/payments/captures/{id}/refund`, `GET /v2/payments/refunds/{id}`) are ASSUMPTION from my own knowledge, not an opened page.
+The chosen product depends on none of the capabilities docs/competition.md marks unverified (Payouts, Disputes, Subscriptions, Transaction Search, Invoicing, Webhooks). It does depend on Orders and Payments behaviour that has not been run. The REST paths for capture read and refund (`GET /v2/payments/captures/{id}`, `POST /v2/payments/captures/{id}/refund`, `GET /v2/payments/refunds/{id}`) were checked on 2026-11-03 against PayPal's published schema (https://developer.paypal.com/api/payments/v2/schema.json) and match.
+
+Three corrections from that check, all built into the app (detail in docs/prds/01-refund-referee.md):
+
+- The capture resource has a status but no refund list. Refunds so far come from `purchase_units[].payments.refunds[]` on GET order.
+- An order created with `payment_source.paypal` returns a `payer-action` link and status `PAYER_ACTION_REQUIRED`, per the Orders v2 sample, not an `approve` link.
+- `Prefer` defaults to `return=minimal`, so calls that need the full resource send `Prefer: return=representation`.
 
 | Dependency | Status | If the sandbox refuses on day 1 | The single proving check |
 |---|---|---|---|
 | OAuth client_credentials on sandbox | VERIFIED pattern | Re-create the REST app; confirm sandbox host `api-m.sandbox.paypal.com` and that Alex copied sandbox, not live, keys | token request returns 200 |
 | Create itemised order (`items`, `breakdown`) | Orders create VERIFIED; breakdown rules ASSUMPTION | Drop tax/shipping lines first, then keep only `item_total`; the case logic still works on items | POST returns an order id and an approval link |
 | Buyer approval in browser with the default sandbox personal account | ASSUMPTION (standard flow) | If redirect return fails, poll GET order until `APPROVED` and have the judge paste nothing; if the personal account login fails, create a new sandbox personal account in the dashboard | GET order shows `APPROVED` |
-| Capture | ASSUMPTION | If the capture comes back PENDING, retry with USD and a fresh default business account; if still pending, use the toolkit `pay_order` path | capture status `COMPLETED` |
-| Refund (full and partial) | `create_refund` in toolkit VERIFIED; REST path ASSUMPTION | Try the toolkit `create_refund` tool instead of raw REST | refund status `COMPLETED` and GET refund matches |
+| Capture | Path VERIFIED against the schema; not yet run | If the capture comes back PENDING, retry with USD and a fresh default business account; the app escalates a pending capture rather than refunding it | capture status `COMPLETED` |
+| Refund (full and partial) | REST path VERIFIED against the schema; not yet run | Read PayPal's error issue and debug id, which the app shows. The toolkit `create_refund` tool was removed from the app, so it is not a one-line fallback | refund status `COMPLETED` and GET refund matches |
 | Model returns schema-valid JSON | Text VERIFIED working; JSON mode and tool calling NOT confirmed | See "Model" below | one call returns JSON that passes the schema |
 
 Kill rule: if capture or refund cannot be made to work by the end of Nov 4 (day 1), stop and test the runner-up (Subscriptions plan translator) the same day. Both depend on the same sandbox account, so if both fail the problem is the account, which is Alex's dashboard check. No labelled mock replaces a failed capability.
@@ -93,7 +99,7 @@ Fixed: `gateway/deepseek/deepseek-v4.1-flash` through Vercel AI Gateway; `LLM_MO
 
 ## Reuse from the current repo
 
-Fine to reuse: Next.js on Vercel scaffold, rate limiter, approval-gate and server policy pattern, money-in-cents helpers, error helpers, test setup, `@paypal/agent-toolkit` 1.11.0 (Apache-2.0) where its order and refund tools fit. Must change: delete the mock and canned modes from `src/lib/config.ts` and the PayPal gateway so the product has no mock in its main path; mocks, if any, live under `tests/` only. Invoice code is removed from the product, not left dormant, because the repo must read as a different product. The README states what was built during the submission window (rule: new or significantly updated, with an explanation).
+Fine to reuse: Next.js on Vercel scaffold, rate limiter, approval-gate and server policy pattern, money-in-cents helpers, error helpers, test setup. `@paypal/agent-toolkit` was removed at build time: a thin REST client keeps the sandbox host fixed in code. Must change: delete the mock and canned modes from `src/lib/config.ts` and the PayPal gateway so the product has no mock in its main path; mocks, if any, live under `tests/` only. Invoice code is removed from the product, not left dormant, because the repo must read as a different product. The README states what was built during the submission window (rule: new or significantly updated, with an explanation).
 
 ## Demo that a judge can verify
 
@@ -113,7 +119,7 @@ Judge or Alex writes their own refund message. The order exists because the app 
 
 ## Assumptions and weaknesses
 
-1. Capture and refund paths behave in sandbox as described above (ASSUMPTION until the proof check passes).
+1. Capture and refund paths match PayPal's published schema, but their sandbox behaviour stays an ASSUMPTION until `npm run proof` passes.
 2. Gallery contents are unknown; a refund-focused entry may exist.
 3. Innovation is the weakest criterion; the claim-verification angle must be visible in the first minute of the video.
 4. Judges must do a PayPal sandbox login to create a fresh order; mitigated by a pre-captured order list and a video that shows the whole thing.
