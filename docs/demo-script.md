@@ -4,12 +4,11 @@ Timed for under 3 minutes. Target running time 2:45.
 
 ## Cannot be filmed yet
 
-**Do not film until real modes are on.** The submission checklist fails if a mock or canned banner shows (docs/prds/01-invoice-agent.md, docs/demo-path.md). As of this writing the live app shows the red "MOCK PayPal. No request was sent to PayPal. Invoice ids are fake." banner and the red "CANNED MODEL OUTPUT, not live AI." banner, and it accepts only the fictional sample. No real PayPal sandbox call and no real model call has ever completed.
+**Do not film until real modes are on.** The submission checklist fails if a mock or canned banner shows (docs/prds/01-invoice-agent.md, docs/demo-path.md). As of 2026-11-03 the live app shows the red "MOCK PayPal. No request was sent to PayPal. Invoice ids are fake." banner and the green "Live AI: gateway/deepseek/deepseek-v4.1-flash" banner. It accepts non-sample text. No real PayPal sandbox call has ever completed.
 
-What unlocks it, both held by Alex (NEEDS.md):
+What unlocks it, held by Alex (NEEDS.md): PayPal sandbox client id and secret set in the deployment, so the banner reads `PayPal SANDBOX`. The model side is done: the banner already reads `Live AI`.
 
-1. PayPal sandbox client id and secret set in the deployment, so the banner reads `PayPal SANDBOX`.
-2. A card on Vercel AI Gateway so the model answers, so the banner reads `Live AI`.
+Try a photo before filming the photo beat. Image input has not been run on the current model.
 
 Check before filming: `GET /api/model-check` on the live URL reports a live model, and `DEMO_REQUIRE_REAL=1 npm run demo:walk` passes.
 

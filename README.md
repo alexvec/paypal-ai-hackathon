@@ -13,7 +13,7 @@ Read this first. Each integration chooses its mode from environment variables at
 | Integration | Current state of the deployed app |
 |---|---|
 | PayPal | **Mock.** PayPal sandbox keys are not configured yet, so a red banner says "MOCK PayPal. No request was sent to PayPal. Invoice ids are fake." The toolkit path below is covered only by tests against stubbed HTTP. It has never run against the real sandbox. |
-| AI model | **Canned.** The app is wired to Vercel AI Gateway (default model `anthropic/claude-haiku-5.5`, which the gateway lists with tool use and vision). The gateway currently refuses this team's calls until a card is on file, so the page shows "CANNED MODEL OUTPUT, not live AI." with the error text, and only the fictional sample can run. The banner comes from a real call, so it changes to "Live AI" by itself once a call succeeds. The extraction and the agent loop have only run against a stubbed model so far. |
+| AI model | **Live.** Production uses `deepseek/deepseek-v4.1-flash` through Vercel AI Gateway, set with `LLM_MODEL`, and the page banner reads "Live AI". `GET /api/model-check` reports the state from a real call. Text extraction has run on this model. The chase agent and image input have only run against a stubbed model so far. If a model call fails, the page falls back to "CANNED MODEL OUTPUT, not live AI." and only the fictional sample can run. |
 
 ## How it works
 
@@ -62,7 +62,7 @@ Open http://localhost:3000. With no configuration it runs in labelled mock and c
 To leave those modes, copy `.env.example` to `.env.local`.
 
 - PayPal: set `PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_SECRET` from a PayPal sandbox app. The app has no path to live PayPal.
-- Model: link a Vercel project and run `vercel env pull` to get an OIDC token for Vercel AI Gateway (valid about 12 hours), or set `AI_GATEWAY_API_KEY`. A direct `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` also works. `LLM_MODEL` overrides the default model, `anthropic/claude-haiku-5.5`.
+- Model: link a Vercel project and run `vercel env pull` to get an OIDC token for Vercel AI Gateway (valid about 12 hours), or set `AI_GATEWAY_API_KEY`. A direct `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` also works. `LLM_MODEL` overrides the code default, `anthropic/claude-haiku-5.5`. The deployed app sets it to `deepseek/deepseek-v4.1-flash`.
 - Policy: `POLICY_MAX_INVOICE_AMOUNT` and `POLICY_ALLOWED_CURRENCIES`. Defaults are 5000 and USD, EUR, GBP.
 
 ## Checks

@@ -7,19 +7,20 @@ What was checked on 2026-11-03, before this rule: GitHub and Vercel were already
 ## Status at the needs check (2026-11-03)
 
 - Available: GitHub push (`gh` logged in as alexvec, `repo` scope) and Vercel deploys (CLI logged in).
-- Tried and not done: the PayPal sandbox app and joining the Devpost hackathon. Both need the browser, and the Chrome extension reported no connected browser, including on a fresh attempt in the follow-up run. The attempt never reached PayPal, so whether a sign-in screen would also block it is unknown. The packet continues in labelled mock mode.
+- Tried and not done: the PayPal sandbox app. On 2026-11-03 the browser connected, and https://developer.paypal.com/dashboard/applications/sandbox redirected to the PayPal sign-in screen (paypal.com/signin). The browser is not signed in to PayPal, and the agent does not type passwords, so it stopped after that one try. No sandbox app or keys exist, and the packet stays in labelled mock mode for PayPal.
+- Not tried in that run: joining the Devpost hackathon. It is not done.
 - Partner credits: docs/competition.md records no promo code. It lists partners offering free credits, with terms and sign-up steps unverified, so nothing was redeemed. Signing up also needs the browser. Whether any credit could pay for model calls is unknown.
-- Card: Alex decided the Vercel AI Gateway card stays with him. The agent adds no card.
-- Model access: tried through Vercel AI Gateway on Alex's own Vercel team, with no pasted key. The gateway refuses calls until a card is on file: "AI Gateway requires a valid credit card on file to service requests." No card was added, so the model stays on labelled canned output.
+- Card: Alex added a card on the Vercel team Alex (alex-0134) on 2026-11-03. The gateway no longer asks for a card.
+- Model access: Claude Haiku is not covered by Token Pass. Production uses `deepseek/deepseek-v4.1-flash` through a Token Pass key. `GET /api/model-check` on the live URL returned `llmSource: LIVE_MODEL` at 2026-11-03T12:06:28Z. PayPal itself is still mock until a sandbox app exists.
 - Limit on the agent: it does not create accounts or type passwords in the browser, even when asked. An account that does not exist yet, or a sign-in screen, is Alex's step.
 - Decision: the build continues in labelled mock mode. Mock mode is not a submittable demo: the entry needs real keys in the deployed app before Alex films or submits.
 
 ## Exact remaining steps for Alex
 
-1. Reconnect the Claude extension in Chrome (https://claude.ai/chrome, signed in to the same account as Claude Code) and resume the director. If developer.paypal.com and Devpost are already signed in, the agent can then create the sandbox app and join the hackathon.
+1. Sign in to https://developer.paypal.com/dashboard/applications/sandbox in the connected Chrome (or sign up, if no account exists), then resume the director. The agent can then create the sandbox app. Sign in to Devpost the same way if the agent should join the hackathon.
 2. Or do it by hand. At https://developer.paypal.com/dashboard/applications/sandbox, sign in or sign up, create a REST app, and put these in the entry's `.env`, using the variable names in `.env.example`: sandbox client ID and secret. Then resume the director, which adds them to Vercel and runs a real sandbox invoice.
 3. Join the hackathon at https://paypalaihackathon.devpost.com/ if the agent could not, and work through the rules checklist below.
-4. Add a card for the model: https://vercel.com/d?to=%2F%5Bteam%5D%2F%7E%2Fai%3Fmodal%3Dadd-credit-card (this unlocks the gateway's free credits, per its error message). Then check `/api/model-check` on the live URL. No redeploy is expected. Alternatively, supply another model key, which would need a code change in `src/lib/llm.ts`.
+4. The model card is done. `/api/model-check` on the live URL already returns `LIVE_MODEL` for `deepseek/deepseek-v4.1-flash`. Do not add another card or top up credits for this.
 
 ## Accounts and keys
 

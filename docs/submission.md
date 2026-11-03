@@ -10,7 +10,7 @@ Draft form text for Alex to paste. Not submitted. Written 2026-11-03.
 
 ### Before you paste: statements that become true only after real keys and a real run
 
-As of this writing the live app runs in labelled mock PayPal mode (fake `MOCK-` ids) and canned model mode, on the fictional sample only. No real PayPal sandbox call and no real model call has ever completed. Each statement below is marked inline in the text as `[CONFIRM AFTER REAL RUN]` followed by its number. Do not paste a marked sentence until you have seen it happen on the live URL with the banners reading `PayPal SANDBOX` and `Live AI`. If it did not happen, delete the sentence or rewrite it to what did happen.
+As of 2026-11-03 the live app runs on a live model (`deepseek/deepseek-v4.1-flash` through Vercel AI Gateway), and PayPal is still in labelled mock mode with fake `MOCK-` ids. No real PayPal sandbox call has ever completed. R10 is confirmed, and R7 and R11 are partly confirmed (see the table). Each statement below is marked inline in the text as `[CONFIRM AFTER REAL RUN]` followed by its number. Do not paste a marked sentence until you have seen it happen on the live URL with the banners reading `PayPal SANDBOX` and `Live AI`. If it did not happen, delete the sentence or rewrite it to what did happen.
 
 | # | Statement | What to see first |
 |---|---|---|
@@ -20,11 +20,11 @@ As of this writing the live app runs in labelled mock PayPal mode (fake `MOCK-` 
 | R4 | After payment, a refresh shows the changed status. | Status changes in the app after the sandbox payment. |
 | R5 | `send_invoice_reminder` works from an approved reminder. | Reminder call returns without error on a sent invoice. |
 | R6 | `record_payment_for_invoice` works and changes the status. | Status changes after approving a cash payment. |
-| R7 | The model reads a real messy note and proposes lines, with ambiguities flagged. | A note that was not written for the extractor produces a sensible proposal. |
-| R8 | The model reads a photo (handwritten tally). | An image upload produces a transcription and lines. Image input has run only against stubs. |
-| R9 | The chase agent is a live model choosing among read and propose tools, with its tool calls shown. | Banner says `Live AI`, and the tool-call list is populated by a real run. |
-| R10 | The live URL accepts text a judge pastes, not only the sample. | Paste something unseen on the live URL and get a proposal, not a 503. |
-| R11 | The model named in the text is the one that answered. | `/api/model-check` shows live, and the banner names the model. Default is `anthropic/claude-haiku-5.5`. |
+| R7 | The model reads a real messy note and proposes lines, with ambiguities flagged. | A note that was not written for the extractor produces a sensible proposal. Partly seen: one fictional test note on 2026-11-03 gave a sensible proposal with ambiguities flagged. Still try a genuine note. |
+| R8 | The model reads a photo (handwritten tally). | An image upload produces a transcription and lines. Image input has run only against stubs, and whether the current model reads images is unconfirmed. |
+| R9 | The chase agent is a live model choosing among read and propose tools, with its tool calls shown. | Banner says `Live AI` (seen), and the tool-call list is populated by a real run (not yet tried). |
+| R10 | The live URL accepts text a judge pastes, not only the sample. | Confirmed 2026-11-03: a fictional non-sample note sent to `POST /api/propose` on the live URL returned a real proposal. |
+| R11 | The model named in the text is the one that answered. | Seen 2026-11-03: `/api/model-check` shows `LIVE_MODEL` and the banner names `gateway/deepseek/deepseek-v4.1-flash`. Recheck on the day. The code default is a different model, and production sets `LLM_MODEL`. |
 
 Statements that are true of the code today and need no real run: the approval click is required by the server, the amount and currency limits are enforced in server code, prices come only from the rate card, the chase agent holds no write tool, and the README lists exactly which toolkit tools are called. These are covered by unit and route tests per the README. Run `npm test` yourself before relying on that sentence.
 
@@ -91,7 +91,7 @@ Confirm the sandbox payer path end to end, add a due date to the invoice flow if
 
 ### Built with
 
-Next.js, the PayPal agent toolkit (`@paypal/agent-toolkit` 1.11.0), the Vercel AI SDK, Vercel AI Gateway for the model (default `anthropic/claude-haiku-5.5`) `[CONFIRM AFTER REAL RUN: R11]`, Playwright for the demo walk. MIT licensed.
+Next.js, the PayPal agent toolkit (`@paypal/agent-toolkit` 1.11.0), the Vercel AI SDK, Vercel AI Gateway for the model (`deepseek/deepseek-v4.1-flash`) `[CONFIRM AFTER REAL RUN: R11]`, Playwright for the demo walk. MIT licensed.
 
 ### Builder
 
@@ -102,7 +102,7 @@ Alex Veciana Belmonte.
 - Live app: https://paypal-ai-hackathon-phi.vercel.app (not the shorter `paypal-ai-hackathon.vercel.app`, which is someone else's app)
 - Source: https://github.com/alexvec/paypal-ai-hackathon
 - Demo video: not uploaded. Add the YouTube URL after Alex records and uploads it. See docs/demo-script.md.
-- Try it: open the live URL, click "Load sample" or paste your own note, and click "Propose invoice". `[CONFIRM AFTER REAL RUN: R10]` Until real keys are on, the deployment accepts only the fictional sample and answers other text with a 503.
+- Try it: open the live URL, click "Load sample" or paste your own note, and click "Propose invoice". PayPal stays a labelled mock, with fake invoice ids, until sandbox keys are on.
 - Judge access: the app has no login. UNVERIFIED whether the form asks for test credentials.
 
 ## Notes for Alex, not form text

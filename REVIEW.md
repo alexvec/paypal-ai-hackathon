@@ -1,16 +1,18 @@
 # REVIEW: Billing Desk Agent, PayPal AI Hackathon
 
-Reviewed 2026-11-03. Read-only check. Nothing was fixed, committed, pushed, deployed, registered or submitted. STATE.md was not edited, so its verify box is still unchecked (see "STATE.md").
+Reviewed 2026-11-03. The verifier's check was read-only.
+
+**Updated later on 2026-11-03 by the director** after Alex added a card to the Vercel team. Model-related lines below were rechecked against the live URL: `GET /api/model-check`, one `POST /api/propose` with a fictional non-sample note, and the page banners. Tests, typecheck, build and the secret scan were not re-run for this update, and the verifier did not re-review it.
 
 ## Verdict
 
-**Alex cannot submit today.** The repo is clean, public, MIT licensed and honest, and the live URL responds. But the deployed app does not yet meet the one stated rule, "meaningfully use both PayPal and AI". As deployed, PayPal is a mock and the model is canned. No real PayPal call and no real model call has ever run. The video cannot be filmed, and 11 statements in the submission text are still unconfirmed.
+**Alex cannot submit today.** The repo is clean, public, MIT licensed and honest, and the live URL responds. But the deployed app does not yet meet the one stated rule, "meaningfully use both PayPal and AI". The model is now live (`gateway/deepseek/deepseek-v4.1-flash`), but PayPal is still a mock, so the PayPal half of the rule is unmet. No real PayPal call has ever run. The video cannot be filmed, and most of the 11 statements in the submission text are still unconfirmed (R10 is confirmed, R7 and R11 partly).
 
 What must happen first, in order:
 
-1. Alex puts PayPal sandbox client ID and secret into the Vercel project (names are in `.env.example`).
-2. Alex adds a card on Vercel AI Gateway (his decision), or supplies another model key.
-3. Re-run the live checks below until the banners read `PayPal SANDBOX` and `Live AI`, and a non-sample text returns a real proposal.
+1. Alex signs in at developer.paypal.com and creates a sandbox app; its client ID and secret go into the Vercel project (names are in `.env.example`). The agent tried once on 2026-11-03 and was stopped by the PayPal sign-in screen.
+2. Done: the card is on the Vercel team and the model answers. Leave the model and gateway key as they are.
+3. Re-run the live checks below until the banners read `PayPal SANDBOX` and `Live AI`. `Live AI` and a real proposal for non-sample text are already seen.
 4. Run the sandbox flow once and settle the unconfirmed items R1 to R11 in docs/submission.md.
 5. Alex joins Devpost, reads the rules tab, and maps the draft text onto the real form fields.
 6. Film the demo, upload it himself, and submit.
@@ -31,10 +33,10 @@ Time left: the blog says submissions close Nov 12, 2026 (date only, time zone un
 | `npm test` | 5 files, 51 tests passed. These include the toolkit code against stubbed HTTP, so they do not prove real PayPal behaviour. |
 | `npm run typecheck` | Clean. |
 | `npm run build` | Succeeded. Routes: `/`, `/api/agent`, `/api/health`, `/api/invoices`, `/api/invoices/[id]/actions`, `/api/model-check`, `/api/propose`. |
-| `GET /` | HTTP 200. Page shows the red banner "MOCK PayPal. No request was sent to PayPal. Invoice ids are fake." |
+| `GET /` | HTTP 200. In a browser, the page shows the red banner "MOCK PayPal. No request was sent to PayPal. Invoice ids are fake." and the green banner "Live AI: gateway/deepseek/deepseek-v4.1-flash". |
 | `GET /api/health` | HTTP 200: `paypal: "mock"`, `source: "MOCK"`, `llmSource: "MODEL_CONFIGURED"`, `llm: "configured"`, `warnings: []`. |
-| `GET /api/model-check` | HTTP 200 but `llmSource: "CANNED"`, model `gateway/anthropic/claude-haiku-5.5`, error: AI Gateway requires a valid credit card on file. |
-| `POST /api/propose` with a non-sample text (a made-up plumbing note) | HTTP 503 `MODEL_UNAVAILABLE`, same gateway card error. The live app cannot process any input except the fictional sample. |
+| `GET /api/model-check` | HTTP 200: `llmSource: "LIVE_MODEL"`, `llmModel: "gateway/deepseek/deepseek-v4.1-flash"`, `modelError: null`, checked at 2026-11-03T12:06:28Z. (The first check returned `CANNED` with the gateway card error, before Alex added the card.) |
+| `POST /api/propose` with a non-sample text (a made-up plumbing note) | HTTP 200: `llmSource: "LIVE_MODEL"`, `modelError: null`. It proposed three lines from a fictional note, kept source phrases, left labour quantity null for "about two hours", left the unmatched washer kit unpriced, and asked four questions. `source` is still `MOCK`. One note only, so this says nothing about quality in general. |
 | Repo reachable | HTTP 200 on the repo page and on raw `LICENSE`. GitHub reports visibility PUBLIC, license MIT, default branch `main`. LICENSE text begins "MIT License / Copyright (c) 2026 Alex Veciana Belmonte". |
 | Run instructions in repo | README has "Run it locally" (`npm install`, `npm run dev`, works with no configuration in labelled mock modes) and a "Checks" section. |
 | Local vs remote `main` | Both at `d4ded0e` after `git fetch`. |
@@ -44,11 +46,11 @@ Time left: the blog says submissions close Nov 12, 2026 (date only, time zone un
 
 ## Does the deployed app meet "meaningfully use both PayPal and AI"?
 
-**Not as deployed. The design would, if keys were set.**
+**Not as deployed: AI yes, PayPal no. The design would, once PayPal sandbox keys are set.**
 
 - PayPal: the code uses `@paypal/agent-toolkit` for six tools, and mode is picked from env at runtime. Deployed, it is the mock gateway. The toolkit path has never touched the sandbox (README says so).
-- AI: extraction and the chase agent are real model code, but the deployed model call fails. The chase "agent" falls back to `runCanned` in `src/lib/agent.ts`, which is plain regex and date rules (`decidedBy: "CANNED_RULES"`), not AI. The extraction fallback only answers the fictional sample.
-- So today a judge would see a mock invoice from a hard-coded sample. That is honestly labelled, but it does not satisfy the rule.
+- AI: extraction runs on the live model (`gateway/deepseek/deepseek-v4.1-flash`) on the deployed app. The chase agent has not been exercised live, and image input has not been tried on this model. If a model call fails, the chase agent still falls back to `runCanned` in `src/lib/agent.ts` (plain regex and date rules, `decidedBy: "CANNED_RULES"`).
+- So today a judge would get a real model proposal, then a mock invoice with a fake id. That is honestly labelled, but it does not satisfy the rule.
 - Whether the design counts as "meaningful" is unverified. The rules define neither word (docs/competition.md says so).
 
 ## Honesty of claims
@@ -79,7 +81,7 @@ Status is the status in docs/competition.md. "Evidence" is what I checked. The b
 | Open to builders worldwide | VERIFIED (blog) | Blog says "from around the world". The file puts "No formal eligibility rules" in quotation marks, but that phrase is not on the page. The page only lists no other criteria. Wording nit, the substance holds | pass, with a misquote to fix |
 | Age, countries, employee exclusions | UNVERIFIED | Devpost rules were never read | unknown |
 | Solo or team | UNVERIFIED | Not read. Entry is a solo builder | unknown |
-| Must meaningfully use both PayPal and AI | VERIFIED | On blog ("The only fundamental requirement"). App as deployed: mock PayPal, canned AI | **fail** until keys are set |
+| Must meaningfully use both PayPal and AI | VERIFIED | On blog ("The only fundamental requirement"). App as deployed: mock PayPal, live AI | **fail** until PayPal sandbox keys are set |
 | No stack required, any form allowed | VERIFIED | On blog. Entry is a web app | pass |
 | No tracks | VERIFIED | On blog | pass |
 | Prize list and amounts | VERIFIED | Matches blog | pass (not a submission item) |
@@ -88,7 +90,7 @@ Status is the status in docs/competition.md. "Evidence" is what I checked. The b
 | Code repository | UNVERIFIED | Public GitHub repo, reachable | pass on the lead, rule unknown |
 | Open-source license | UNVERIFIED | MIT LICENSE on GitHub | pass on the lead, rule unknown |
 | Text description | UNVERIFIED | docs/submission.md drafted, not mapped to real fields, 11 statements unconfirmed | partial |
-| Working prototype or live URL | UNVERIFIED | URL responds (200), but only runs the fictional sample, in mock/canned modes | partial |
+| Working prototype or live URL | UNVERIFIED | URL responds (200) and takes non-sample text on the live model, but PayPal is mock | partial |
 | Judge test access | UNVERIFIED | App has no login | unknown |
 | Language | UNVERIFIED | All text is English | unknown |
 | Devpost form fields | UNVERIFIED | Devpost returned 403 to research. I did not try the page | unknown |
@@ -101,15 +103,15 @@ Verified-vs-unverified marking: every VERIFIED row I could test is on the blog p
 
 ## Blockers in order
 
-1. Alex: PayPal sandbox app and keys. Create a REST app at developer.paypal.com, then add client ID and secret to the Vercel project. The agent could not do it (no connected browser; it does not create accounts or type passwords). See NEEDS.md steps 1 and 2.
-2. Alex: card on Vercel AI Gateway, or another model key. He has decided the card stays with him. Live `/api/model-check` shows the refusal today.
-3. Agent or Alex, after 1 and 2: one real run on the live URL with a non-sample note; confirm R1 to R11, in particular the unconfirmed sandbox payer path.
+1. Alex: PayPal sandbox app and keys. Create a REST app at developer.paypal.com, then add client ID and secret to the Vercel project. The agent tried once on 2026-11-03: the dashboard redirected to the PayPal sign-in screen, and it does not create accounts or type passwords. See NEEDS.md steps 1 and 2.
+2. Cleared: Alex added the card, and live `/api/model-check` returns `LIVE_MODEL`.
+3. Agent or Alex, after 1: one real run on the live URL with a genuine note; confirm the open R items in docs/submission.md, in particular the unconfirmed sandbox payer path. The model also needs one image upload and one chase-agent run, since neither has been tried on this model.
 4. Alex: join Devpost at https://paypalaihackathon.devpost.com/ and read the rules tab. This also settles every UNVERIFIED row above.
 5. Alex: film the demo once banners read `PayPal SANDBOX` and `Live AI`, upload it, and add the URL to docs/submission.md.
 6. Alex: map the text onto the real form fields and submit with his own submission script. Not run by me.
 7. Agent, small and before submitting: fix the doc nits listed below.
 
-Also unfinished: partner credits were never read or redeemed. NEEDS.md says they must be read on the partner pages before they are skipped.
+Also unfinished: the deployed model does not run on partner credit, and partner credits were never read or redeemed. NEEDS.md says they must be read on the partner pages before they are skipped.
 
 ## Known issues to decide on
 
@@ -121,18 +123,18 @@ Also unfinished: partner credits were never read or redeemed. NEEDS.md says they
    - PRD and win plan list `create_product`, `list_products`, `generate_invoice_qr_code`, `get_merchant_insights`. The code calls none. README and submission say so, so they are consistent with the code. The PRD and win plan are stale.
    - The Orders v2 fallback is described in the PRD, win plan and demo-path. It is not built. The demo script says so. docs/demo-path.md step 4 does not.
    - On policy violations the create button stays enabled (`desk.tsx` disables it only for non-policy problems) and the server answers 422 "Blocked by policy". This is deliberate, and the demo script uses it. A user may find it odd.
-5. **`/api/health` is more optimistic than the truth.** It reports `llm: "configured"`, `llmSource: "MODEL_CONFIGURED"` and `warnings: []` while the model call fails. Only `/api/model-check` and the page banner show the failure. Liveness-only by design, but easy to misread.
+5. **`/api/health` is more optimistic than the truth.** It reports `llm: "configured"`, `llmSource: "MODEL_CONFIGURED"` and `warnings: []` whether or not the model call works; it said the same while every call was failing. Only `/api/model-check` and the page banner show the real state. Liveness-only by design, but easy to misread.
 6. **competition.md** puts "No formal eligibility rules" in quotes. The blog does not contain that phrase.
 
 ## STATE.md
 
-The verify box is unchecked. I did not check it. My instruction for this run was read-only apart from REVIEW.md, and the entry is not ready, so ticking it would misstate the position. Alex or the next run can tick it after this review is accepted.
+The verifier left the verify box unchecked. The director ticked it afterwards to mean the review was done, with a note that the entry is not ready to submit.
 
 ## Could not check
 
 - Whether the deployed build equals commit `d4ded0e`. I did not query Vercel. The live responses match the code.
 - Devpost pages, rules, form fields, video host rules. Not opened (403 earlier, and Alex holds this step).
-- Any real PayPal sandbox behaviour and any real model output. Neither can run.
+- Any real PayPal sandbox behaviour, which cannot run yet. Real model output was seen for one text note only: image input and the chase agent are untested on the live model.
 - The contents of `.env.local` and the `.vercel` folder (left unopened).
 - The Internshala page and the PayPal platform-facts pages in competition.md.
 - The browser UI beyond the server-rendered HTML. I did not run the Playwright walk.
