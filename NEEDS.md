@@ -1,57 +1,32 @@
 # NEEDS
 
-The agent creates the accounts and keys below, and redeems every partner credit or promo code in docs/competition.md before any payment card. The PayPal blog lists free credits from APIMatic, Render, Kernel, Channel3, Postman, Astropods, Elastic, AG Grid, and Bryntum; their amounts and steps were unverified and must be read on the partner pages before they are skipped. Alex steps in only for a payment card, government ID, a tax form, or a code he must type himself. Do not submit the entry.
+Status as of 2026-11-03. The invoice-desk product is dropped; this is a rebuild.
 
-What was checked on 2026-11-03, before this rule: GitHub and Vercel were already authenticated. PayPal sandbox keys and an LLM key were missing, and nothing had been created yet.
+## Current facts
 
-## Status at the needs check (2026-11-03)
+- GitHub push works (`gh` logged in as alexvec, `repo` scope). Vercel deploys work (CLI logged in). Live URL: https://paypal-ai-hackathon-phi.vercel.app
+- Model: live in production as `gateway/deepseek/deepseek-v4.1-flash`. Alex said not to change `LLM_MODEL`, not to add a card, and not to top up. None of those is needed.
+- PayPal: no sandbox app and no keys exist. In Chrome, https://developer.paypal.com/dashboard/applications/sandbox redirects to the PayPal sign-in screen (paypal.com/signin). Chrome is not signed in to PayPal.
+- Devpost: logged out in Chrome. The hackathon is not joined.
+- Partner credits: no code is published anywhere I could open. Terms are unverified and listed in docs/competition.md under "Credits and conditions". None is needed for the sandbox, which is free. Nothing for the agent to redeem yet.
+- Rules: the Devpost rules were read in Alex's browser by the director and are recorded in docs/competition.md. The earlier list of rules for Alex to check is closed.
 
-- Available: GitHub push (`gh` logged in as alexvec, `repo` scope) and Vercel deploys (CLI logged in).
-- Tried and not done: the PayPal sandbox app. On 2026-11-03 the browser connected, and https://developer.paypal.com/dashboard/applications/sandbox redirected to the PayPal sign-in screen (paypal.com/signin). The browser is not signed in to PayPal, and the agent does not type passwords, so it stopped after that one try. No sandbox app or keys exist, and the packet stays in labelled mock mode for PayPal.
-- Not tried in that run: joining the Devpost hackathon. It is not done.
-- Partner credits: docs/competition.md records no promo code. It lists partners offering free credits, with terms and sign-up steps unverified, so nothing was redeemed. Signing up also needs the browser. Whether any credit could pay for model calls is unknown.
-- Card: Alex added a card on the Vercel team Alex (alex-0134) on 2026-11-03. The gateway no longer asks for a card.
-- Model access: Claude Haiku is not covered by Token Pass. Production uses `deepseek/deepseek-v4.1-flash` through a Token Pass key. `GET /api/model-check` on the live URL returned `llmSource: LIVE_MODEL` at 2026-11-03T12:06:28Z. PayPal itself is still mock until a sandbox app exists.
-- Limit on the agent: it does not create accounts or type passwords in the browser, even when asked. An account that does not exist yet, or a sign-in screen, is Alex's step.
-- Decision: the build continues in labelled mock mode. Mock mode is not a submittable demo: the entry needs real keys in the deployed app before Alex films or submits.
+## Exact remaining step for Alex
 
-## Exact remaining steps for Alex
+Sign in to, or create, the PayPal developer account at https://developer.paypal.com in Chrome (an existing PayPal login works, per the rules page). Complete any verification email or captcha. After that, the agent creates the sandbox REST app, writes the client ID and secret to `.env`, and sets them on Vercel.
 
-1. Sign in to https://developer.paypal.com/dashboard/applications/sandbox in the connected Chrome (or sign up, if no account exists), then resume the director. The agent can then create the sandbox app. Sign in to Devpost the same way if the agent should join the hackathon.
-2. Or do it by hand. At https://developer.paypal.com/dashboard/applications/sandbox, sign in or sign up, create a REST app, and put these in the entry's `.env`, using the variable names in `.env.example`: sandbox client ID and secret. Then resume the director, which adds them to Vercel and runs a real sandbox invoice.
-3. Join the hackathon at https://paypalaihackathon.devpost.com/ if the agent could not, and work through the rules checklist below.
-4. The model card is done. `/api/model-check` on the live URL already returns `LIVE_MODEL` for `deepseek/deepseek-v4.1-flash`. Do not add another card or top up credits for this.
+## After that, the agent does
 
-## Accounts and keys
+- Create the sandbox REST app and read the default sandbox business and personal accounts.
+- Check whether Invoicing, Payouts, Disputes, Subscriptions and Transaction Search work on the sandbox business account, and record the result in docs/competition.md, but only for the capabilities the chosen product uses.
+- Read a partner's own page before claiming any partner credit, and only if the chosen product uses that partner.
 
-1. Devpost account and hackathon registration. Needed to submit, and likely to see the rules. Alex does this in their own browser. The build can continue without it. No mock path, and submitting is Alex's act via submit.sh. Registration requirements are UNVERIFIED because Devpost returned 403.
-2. PayPal Developer account (log in or sign up at developer.paypal.com, then respond to the verification email). The build can continue with mocks, but any real PayPal behavior needs it. Source: https://developer.paypal.com/api/rest/sandbox/
-3. PayPal sandbox REST app credentials: client ID and secret (Developer Dashboard, Apps & Credentials). Needed for any real Orders API or agent toolkit calls. The build can continue without them. Fallback: a mock PayPal layer with clearly labeled fake responses. The sandbox itself is the free test path, and a new developer account includes a personal and a business sandbox account. Source: https://developer.paypal.com/api/rest/
-4. LLM provider API key (provider not chosen; the product is not chosen here). The hackathon requires meaningful AI use, so a stubbed model would weaken the entry. The build can scaffold without a key. Fallback for development only: canned model responses, which should not be the submitted demo. A paid plan may be needed depending on provider and usage. Whether any provider is required or preferred by the hackathon is UNVERIFIED.
-5. Deploy host account and token for the live URL (CLAUDE.md requires a responding live URL; the deployment is part of the build). Render is a hackathon sponsor with a Render credits prize, but any host works unless the rules say otherwise (UNVERIFIED). The build can continue locally without it. No mock path for the live URL itself.
-6. A public repo location for pushing (GitHub account is already in use as alexvec). Confirm that push access is set up. Whether the repo must be public and open-source licensed is UNVERIFIED.
+## Alex's acts, not the agent's
 
-## Optional, only if the strategy stage targets them
+- Join the hackathon with "Join Hackathon" on a Devpost account (Devpost is logged out; the agent was told not to sign up for anything).
+- Submit the entry, upload the video to YouTube, and send the form. The agent does not do these.
+- If the entry wins: the affidavit and tax form (W-9 or W-8BEN). Source: https://paypalaihackathon.devpost.com/rules (read in browser by the director 2026-11-03).
 
-- Sponsor and partner credits (APIMatic, Render, Kernel, Channel3, Postman, Astropods, Elastic, AG Grid, Bryntum): sign-up steps and terms are UNVERIFIED; the blog only lists them. Source: https://developer.paypal.com/community/blog/PayPal_AI_Hackathon. Not needed unless the strategy stage targets a sponsor prize.
-- PayPal Business account: only needed to go live, not for the sandbox. Do not use real money. Source: https://developer.paypal.com/api/rest/
-- Agent toolkit, MCP server, and Agentic Commerce Protocol access: exist per search snippets; the quickstart pages I tried returned 404. Auth requirements and sandbox availability are unconfirmed. Check https://developer.paypal.com/ai-tools/agent-tools. Best Use of Agentic Commerce is an award, so this may matter.
+## Still missing for the build
 
-## Unverified rules Alex should check in a browser
-
-Open https://paypalaihackathon.devpost.com/ and https://paypalaihackathon.devpost.com/rules (both returned 403 to the research tool) and confirm:
-
-1. Exact submission cut-off time and time zone. The blog says Nov 12, 2026; a third-party listing says 13 Nov 2026, 1:30 AM IST.
-2. Age of majority, restricted countries, employee and sponsor exclusions.
-3. Solo entry allowed, and team size limits.
-4. Demo video: maximum length, required host (a third-party listing says public YouTube, under 3 minutes), language or captions.
-5. Repo requirements: public or private, required license (a third-party listing says open-source), and where hosted.
-6. Required text fields and Devpost form fields.
-7. Whether a live URL or working prototype is required, and how judges get testing access.
-8. Judging criteria and weights (a third-party listing names five criteria, no weights).
-9. Whether the project must be new or started inside the build window, and the rules on existing work and third-party code.
-10. Rules for sponsor prizes (whether you must use the sponsor's product), and whether one project can win multiple prizes.
-11. Disqualification rules, IP ownership terms, and prize payout and tax terms.
-12. Which PayPal APIs or products count as meaningful PayPal use, and what counts as meaningful AI use.
-
-After checking, update docs/competition.md so each rule shows VERIFIED with the URL.
+Nothing else. No payment card, government ID or tax form is needed to build. Stop and add a line here only if a captcha, card, ID or tax form appears.
