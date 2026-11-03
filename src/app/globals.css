@@ -40,7 +40,7 @@ button.link { background: none; border: 0; padding: 0; color: var(--accent); fon
 .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 10px; }
 .push { margin-left: auto; }
 .hint { color: var(--muted); font-size: 14px; }
-.ratecard { margin-top: 14px; font-size: 14px; }
+.ratecard { margin-top: 14px; font-size: 14px; overflow-x: auto; }
 .ratecard summary { cursor: pointer; color: var(--muted); }
 .ratecard table { width: 100%; border-collapse: collapse; margin: 6px 0; }
 .ratecard th { text-align: left; font-weight: 600; padding: 2px 4px; }
@@ -64,7 +64,6 @@ label input, label textarea { font-weight: 400; margin-top: 3px; }
 .num { text-align: right; white-space: nowrap; }
 tr.flagged { background: #fffbef; }
 .match { display: block; font-size: 12px; color: var(--green); margin-top: 3px; }
-.match.unmatched { color: var(--amber); font-weight: 600; }
 .flag { display: block; font-size: 13px; color: var(--amber); margin-top: 2px; }
 .gate { border: 1px dashed var(--muted); border-radius: 8px; padding: 4px 14px 14px; margin-top: 16px; }
 .gate h4 { margin: 10px 0 8px; }
@@ -98,6 +97,16 @@ dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
 footer { margin-top: 32px; font-size: 13px; color: var(--muted); }
 footer a { color: inherit; }
 @media (max-width: 640px) {
-  .lines td:nth-child(1), .lines th:nth-child(1) { display: none; }
+  .lines thead { display: none; }
+  .lines tbody tr { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px 10px; padding: 10px 6px; border-bottom: 1px solid var(--line); }
+  .lines tbody td { display: block; width: auto !important; padding: 0; border: 0; text-align: left; }
+  .lines tbody td:nth-child(1) { display: none; }
+  .lines tbody td:nth-child(2) { grid-column: 1 / -1; }
+  .lines tbody td:nth-child(6) { grid-column: 1 / -1; }
+  .lines td[data-label]::before { content: attr(data-label); display: block; font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+  .lines td.num[data-label] { padding-top: 0; }
+  .lines tfoot tr { display: flex; justify-content: space-between; padding: 10px 6px; }
+  .lines tfoot td { padding: 0; }
+  .ratecard input { min-width: 80px; }
   .push { margin-left: 0; width: 100%; }
 }

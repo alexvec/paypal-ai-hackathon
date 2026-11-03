@@ -336,6 +336,9 @@ export function Desk({ modes, policy, sampleNote, defaultRateCard }: { modes: Mo
         },
       });
       setInvoices((list) => [data.invoice, ...list]);
+      // The proposal is used up, so a second click cannot create a duplicate invoice.
+      setProposal(null);
+      setDraft(null);
     } catch (e) {
       setCreateError(asApiError(e));
     } finally {
@@ -414,12 +417,12 @@ export function Desk({ modes, policy, sampleNote, defaultRateCard }: { modes: Mo
                       <td>{i + 1}</td>
                       <td>
                         <input aria-label={`Line ${i + 1} description`} value={line.description} onChange={(e) => updateLine(i, { description: e.target.value })} />
-                        <span className={`match ${line.match}`}>{line.match === "matched" ? `Rate card${line.unit ? `, per ${line.unit}` : ""}` : "Not on the rate card"}</span>
+                        {line.match === "matched" ? <span className="match">Rate card{line.unit ? `, per ${line.unit}` : ""}</span> : null}
                         {line.flags.map((f) => <span className="flag" key={f} data-testid="line-flag">{f}</span>)}
                       </td>
-                      <td><input aria-label={`Line ${i + 1} quantity`} inputMode="decimal" value={line.quantity} onChange={(e) => updateLine(i, { quantity: e.target.value })} data-testid="line-qty" /></td>
-                      <td><input aria-label={`Line ${i + 1} unit price`} inputMode="decimal" value={line.unitPrice} onChange={(e) => updateLine(i, { unitPrice: e.target.value })} data-testid="line-price" /></td>
-                      <td className="num">{cents === null ? "-" : fromCents(cents)}</td>
+                      <td data-label="Qty"><input aria-label={`Line ${i + 1} quantity`} inputMode="decimal" value={line.quantity} onChange={(e) => updateLine(i, { quantity: e.target.value })} data-testid="line-qty" /></td>
+                      <td data-label="Unit price"><input aria-label={`Line ${i + 1} unit price`} inputMode="decimal" value={line.unitPrice} onChange={(e) => updateLine(i, { unitPrice: e.target.value })} data-testid="line-price" /></td>
+                      <td className="num" data-label="Amount">{cents === null ? "-" : fromCents(cents)}</td>
                       <td><button type="button" className="link" onClick={() => setDraft({ ...draft, lines: draft.lines.filter((_, j) => j !== i) })}>Remove</button></td>
                     </tr>
                   );
