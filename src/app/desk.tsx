@@ -447,7 +447,7 @@ export function Desk({ modes, policy, sampleNote, defaultRateCard }: { modes: Mo
           </section>
         ) : null}
       </main>
-      <footer>Fictional sample data. This app only ever talks to the PayPal sandbox. <a href="https://github.com/alexvec/paypal-ai-hackathon">Source</a></footer>
+      <footer>The sample note is fictional. This app has no path to live PayPal. <a href="https://github.com/alexvec/paypal-ai-hackathon">Source</a></footer>
     </div>
   );
 }

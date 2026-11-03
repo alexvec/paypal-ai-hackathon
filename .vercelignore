@@ -1,0 +1,6 @@
+.env
+.env.*
+tests
+e2e
+test-results
+playwright-report

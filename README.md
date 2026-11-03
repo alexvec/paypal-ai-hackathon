@@ -2,7 +2,7 @@
 
 A small-business owner pastes the messy thing that means "I'm owed money": a chat message, an email thread, a job note, a photo of a handwritten tally. An AI agent turns it into a PayPal invoice through the PayPal agent toolkit, holds it behind a human approval gate, sends it, then watches the invoice status and chases or reconciles it.
 
-Live: https://paypal-ai-hackathon.vercel.app
+Live: https://paypal-ai-hackathon-phi.vercel.app
 
 Entry for the PayPal AI Hackathon. MIT licensed.
 
@@ -13,7 +13,7 @@ Read this first. Each integration chooses its mode from environment variables at
 | Integration | Current state of the deployed app |
 |---|---|
 | PayPal | **Mock.** PayPal sandbox keys are not configured yet, so a red banner says "MOCK PayPal. No request was sent to PayPal. Invoice ids are fake." The toolkit path below is covered only by tests against stubbed HTTP. It has never run against the real sandbox. |
-| AI model | See the banner on the page. It comes from a real call to the model through Vercel AI Gateway. If that call fails, the page shows "CANNED MODEL OUTPUT, not live AI." and the error text, and only the fictional sample can run. |
+| AI model | **Canned.** The app is wired to Vercel AI Gateway (default model `anthropic/claude-haiku-5.5`, which the gateway lists with tool use and vision). The gateway currently refuses this team's calls until a card is on file, so the page shows "CANNED MODEL OUTPUT, not live AI." with the error text, and only the fictional sample can run. The banner comes from a real call, so it changes to "Live AI" by itself once a call succeeds. The extraction and the agent loop have only run against a stubbed model so far. |
 
 ## How it works
 
