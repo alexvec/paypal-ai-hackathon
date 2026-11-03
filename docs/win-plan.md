@@ -1,93 +1,121 @@
 # Win plan: PayPal AI Hackathon
 
-Written 2026-11-03. Rule status comes from docs/competition.md. Anything not VERIFIED there is an ASSUMPTION here and is labelled so. Nothing in this file changes the competition notes.
+Written 2026-11-03 (rebuild). Cut-off: Nov 12, 2026 12:00 pm PT (VERIFIED-BROWSER, docs/competition.md). Rule facts come only from docs/competition.md. Anything not stated there is labelled ASSUMPTION. Nothing here edits the competition notes. No customer, market figure, metric or testimonial is invented; none is used.
 
 ## Decision
 
-Track: single product, "invoice agent" (working title: Billing Desk Agent). Full spec in docs/prds/01-invoice-agent.md.
+Product: **Refund Referee** (working title). Single product; the event has no tracks (VERIFIED, PayPal blog). Spec: docs/prds/01-refund-referee.md.
 
-One sentence: a small-business owner pastes or forwards the messy real-world thing that means "I'm owed money" (an email thread, a chat message, a job note, a photo of a handwritten tally). An AI agent turns it into a PayPal invoice through the PayPal agent toolkit, holds it behind a human approval gate, sends it, then watches the PayPal invoice status and chases or reconciles it.
+- Buyer: the owner of a small online shop who takes PayPal checkout and answers customer refund emails personally.
+- Job: "A customer writes in asking for money back. Decide what, if anything, I owe them under my policy, check their story against what PayPal actually recorded, and refund exactly that, with my sign-off."
+- PayPal capability (one, used deeply): Orders v2 and Payments v2 on the sandbox. The app creates an itemised order, the judge approves it as the sandbox buyer, the app captures it, reads the capture, and later issues a computed partial or full refund and reads it back.
+- What the model does that code cannot: read a free-text customer message in any wording or language, extract which items and what outcome the customer is claiming, match it to the merchant's written policy clauses, and draft the reply. Code does everything numeric and everything that moves money.
 
-## What the rules actually give us
+Why it is not the invoice desk: Ledgerbird (operator statement, not seen by us) makes invoices to get paid. This product starts after the payment has been captured and works the other direction: money back out, decided against evidence. Different PayPal objects (capture and refund, not invoice), different direction of money, different user moment.
 
-| Fact from docs/competition.md | Status | What we do with it |
+## Candidates considered and why each lost
+
+Scored against the five published Stage Two criteria and the hard tests (no unverified sandbox dependency without a real-PayPal fallback; input a judge can supply; no real money).
+
+| Candidate | Result | Why it lost, or won |
 |---|---|---|
-| Project must "meaningfully use both PayPal and AI" | VERIFIED (blog) | Both are load-bearing. See the removal test below. |
-| No stack required; agent, app, automation, business tool all allowed | VERIFIED | A business tool built as an agent fits. |
-| No prescribed tracks | VERIFIED | One product, aimed at several prizes. |
-| Best Overall 12k/8k/5k; five honorable mentions at 5k including Best Demo Delivery, Best Use of PayPal + AI, Best Use of Agentic Commerce, Most Impactful, Most Creative | VERIFIED | See prize map. |
-| Judging criteria | UNVERIFIED | Plan against the third-party lead (technical implementation, design, potential impact, innovation, presentation) as an ASSUMPTION only. No weights. |
-| Demo video, repo, text description, live URL | UNVERIFIED | Plan to supply all four. Third-party lead says public video under 3 minutes and an open-source repo. Build to that cheaply. |
-| Cut-off time | UNVERIFIED | Blog says Nov 12. Third-party conversion suggests about 20:00 UTC Nov 12. Treat that as binding. |
-| Original-work / new-project rule | UNVERIFIED | Start fresh in this repo, commit history shows the work inside the build window. |
+| Invoice agent (messy input to invoice) | Lost | Same job as Ledgerbird, which Alex says is in the gallery. Innovation (one fifth of the score) is capped. |
+| Mandate-bound buyer agent | Lost | Merchant and catalogue would be ours, so input is invented. The documented agentic checkout (ChatGPT Apps SDK, Braintree) is not the REST sandbox. |
+| Dispute triage | Lost | Fails the feasibility test. How to create a dispute in sandbox is UNVERIFIED and no real-PayPal fallback exists: the only alternative is seeded fiction. |
+| Payouts desk (pay a list from a CSV, bounty or contributor payouts) | Lost | Payouts enablement on a new sandbox business account is UNVERIFIED and the business account must be funded. Fallback that still calls real PayPal would be a different product. Also not in the toolkit. |
+| Transaction Search reconciliation | Lost | Up to three hours before a fresh transaction appears (VERIFIED), enablement UNVERIFIED, and the bank-statement side would be invented. |
+| Pay-per-crawl or paywall for bots | Lost | Close to CrawlerPal, 2025 first place (different event). Low Innovation. |
+| Chat with my PayPal data | Lost | A chat box over read tools. Wrapper. |
+| Toolkit catalog tour (invoices plus subscriptions plus tracking) | Lost | Shallow on each. Violates "deep use of one". |
+| Subscriptions plan translator (pricing page URL to Catalog product and Billing Plans) | Runner-up | Real judge input (any public pricing page) and a checkable plan id, but Subscriptions enablement is UNVERIFIED, innovation is moderate, and it reads as form filling. It is the pivot if refunds fail on day 1 (see kill rule). |
+| **Refund Referee** | **Chosen** | Uses only Orders and Payments, the core documented path. Input is a message the judge writes plus a PayPal order the app genuinely creates and the judge genuinely approves. Output is a PayPal refund id checkable in the sandbox. |
 
-## Scoring the ideas
+## Past winners (a DIFFERENT event: PayPal Dev Days 2025, about 24 hours, May 29, 2025)
 
-Scored against the assumed criteria (ASSUMPTION: technical implementation, design, impact, innovation, presentation, equal footing) and against the hard constraint that the work must be working, live and sandbox-backed within 9 days with one person. Scores 1 to 5, my judgement, not data.
+From docs/competition.md, which cites https://developer.paypal.com/community/blog/winners-dev-days-hackathon/ (opened). The page gives no demo or technical detail beyond the lines below. I do not guess at their internals.
 
-| Idea | PayPal is the engine | AI is the engine | Buildable and demoable by Nov 9 | Demo clarity | Risk from unconfirmed APIs | Verdict |
-|---|---|---|---|---|---|---|
-| A. Invoice agent: messy input to PayPal invoice, approval gate, status watching and reminders | 5: invoices, products, reminders, payments, reporting all via toolkit | 5: multimodal extraction, pricing and catalog reasoning, tool-calling loop, drafting | 4 | 5: before/after on real input | Medium: sandbox invoice payment path unconfirmed, has an Orders fallback | CHOSEN |
-| B. Buyer-side shopping agent with spending mandate (PRD 02) | 4: create_order, pay_order | 4 | 2: needs a merchant catalogue, and the real agentic checkout (ACP) is documented only for ChatGPT Apps + Braintree | 4 | High | Runner-up, rejected |
-| C. Dispute triage agent (list_disputes, get_dispute, accept_dispute_claim) | 3 | 4 | 1: sandbox disputes are hard to create on demand, so the demo would rest on seeded fiction | 2 | High | Rejected |
-| D. Generic "chat with your PayPal data" over reporting tools | 2 | 3 | 4 | 2 | Low | Rejected: reads as a wrapper |
-| E. Wide combo of invoices + subscriptions + disputes + tracking | 3 | 3 | 1 | 2 | High | Rejected: shallow on each |
-
-### Why the others lose
-
-- B loses on feasibility and honesty. The one agentic checkout flow PayPal documents (https://developer.paypal.com/agent-ready/agentic-commerce-protocol, opened and read) is a ChatGPT Apps SDK app with Braintree as provider and a `payment_mode` test flag. It does not use the PayPal REST sandbox and needs a ChatGPT developer-mode setup judges cannot run. Building B on toolkit `create_order`/`pay_order` alone needs an invented merchant, which makes the demo a closed world we wrote ourselves.
-- C loses because the demo input would be fabricated disputes. We cannot show it on real input.
-- D and E lose the rule "deep use of one partner technology beats shallow use of several." D is read-only; E spreads thin.
-
-## Why A wins
-
-1. Deep use of one partner technology. The PayPal agent toolkit (`@paypal/agent-toolkit`, confirmed on https://github.com/paypal/agent-toolkit, npm install, Node 18+, Vercel AI SDK / OpenAI / LangChain / MCP, sandbox supported) carries the whole lifecycle: `create_product`, `create_invoice`, `send_invoice`, `send_invoice_reminder`, `get_invoice`, `list_invoices`, `generate_invoice_qr_code`, `record_payment_for_invoice`, `get_merchant_insights`. These tool names were seen on the toolkit README and the agent-tools page. One partner, many tools, one coherent job.
-2. Removal test. Without PayPal, there is no invoice, no payment link, no status to watch, so the agent has nothing to act on. Without AI, the user must hand-key line items, which is exactly the chore the product removes, and the messy-input step cannot be done by a form. Neither is decoration.
-3. The demo is checkable. A judge pastes their own text, sees the structured invoice, approves, and opens the real sandbox invoice in PayPal. No fabricated customers needed: the judge supplies the input.
-4. It has a business owner who pays (see PRD).
-
-### Prize map
-
-| Prize (all VERIFIED to exist) | Fit | Honest note |
+| Winner | Page says | How Refund Referee differs |
 |---|---|---|
-| Best Overall | Primary target | Depends on assumed criteria. |
-| Best Use of PayPal + AI | Strong. The toolkit does the work. | Judging definition of "meaningful" UNVERIFIED. |
-| Best Demo Delivery | Strong, by design. The demo script, the three-minute cut and a one-click sample are in scope. | Judged on the video most likely. Budget real time for it. |
-| Best Use of Agentic Commerce | Moderate. The agent holds delegated authority to bill on a person's behalf, under a policy and approval gate, and follows up autonomously. | This is merchant-side agentic commerce. It does not implement PayPal's Agentic Commerce Protocol, and we will not claim it does. |
-| Most Impactful / Most Creative | Possible, secondary. | Do not chase. No market statistics will be quoted unless sourced. |
-| Render sponsor prize | Cheap add-on: deploy on Render if the free tier suffices. | Sponsor terms UNVERIFIED. Use only if it costs no time. |
-| AG Grid, APIMatic, Bryntum, Channel3 | Ignored. | Bolting them on is the shallow-use trap. |
+| 1st, $5,000: CrawlerPal (Jordi Montes, Neeraj Jhawar) | "a paywall AI agent assistant built with PayPal APIs" | Nearest in kind: an agent on PayPal APIs. CrawlerPal, going by that one line, is about charging for access. Ours is merchant-side post-sale: it reads a captured payment, tests a customer's claim against it and pays money out under a code-enforced policy. We do not build a paywall or pay-per-access. |
+| 2nd, $3,000: Shopware 6 PayPal integration upgrade (Team Codebusters) | Moved the integration from JS SDK v5 to beta JS SDK v6 | A legacy SDK migration, no AI decision. Ours is a new product where AI interprets customer language. |
+| 3rd, $2,000: Rosen (Sida Zhang, Xiaobin Gu) | "a global social trading app powered by PYUSD" | A consumer trading app on a stablecoin. Ours is a back-office tool for one merchant on sandbox REST payments. |
 
-## Plan to the deadline
+Supported lesson (the page, not the 2026 judges): the 2025 winners were an agent, a legacy upgrade and a stablecoin app, not invoicing tools. Whether this carries to 2026 is inference.
 
-Today is Nov 3. Binding deadline: assume Nov 12 about 20:00 UTC (noon Pacific). Target "submission-ready" Nov 9, leaving three days of buffer.
+## Judging plan, criterion by criterion
+
+Stage One (pass/fail): reasonably fits the theme and reasonably applies the required APIs. Pass: every decision ends in a real Orders/Payments call whose ids are shown. No mock path in the product.
+
+Stage Two, five equal criteria:
+
+1. Technological Implementation. Real flow: OAuth, create itemised order, buyer approval, capture, GET capture (refundable amount and prior refunds), refund with `PayPal-Request-Id` idempotency, GET refund. The model output is schema-validated; code recomputes the refund from PayPal's numbers and refuses anything the policy or the capture does not allow, so the model cannot move money by itself. Tests cover the gate and the maths. The README lists exactly which endpoints are called.
+2. Design. One complete flow in one screen: Orders list, case view (customer message on the left, PayPal record on the right, contradictions highlighted), proposed refund with its arithmetic, approve button, receipt with PayPal ids and a raw-response drawer. Honest empty and error states.
+3. Potential Impact. A specific, credible case with no statistics: a small shop owner handling refund emails alone, and the money decision hinges on facts held by PayPal. No market figure appears anywhere unless sourced.
+4. Innovation/Idea. The angle is claim verification: the customer's story is tested against PayPal's record (items, amount, date, prior refunds) before money moves, and the refund amount is derived by code, not by the model. Honest limit: refund handling is a plausible gallery topic; the gallery is unpublished so we cannot check.
+5. Presentation. Under 3 minutes, one real order end to end, showing the sandbox ids in PayPal's own dashboard. Problem, who for, why it matters in the first 20 seconds.
+
+Tie-break follows that same order, so Technological Implementation evidence gets most care.
+
+## Prize angles (published list, VERIFIED-BROWSER)
+
+| Prize | Fit | Note |
+|---|---|---|
+| Grand ($12k / $8k / $5k) | Primary | Depends on the five criteria above. |
+| Best Use of PayPal + AI ($5k) | Strong | Removal test: without PayPal there is no payment record or refund; without the model, free-text claims cannot be read. |
+| Best Demo Delivery ($5k) | Strong | Single end-to-end scripted real case; the video is a deliverable. |
+| Best Use of Agentic Commerce ($5k) | Moderate, stated honestly | An agent holding delegated authority to move money inside a code-enforced mandate and approval gate. It does not implement PayPal's Agentic Commerce Protocol and we will not claim so. |
+| Most Impactful, Most Creative | Secondary | Do not chase. |
+| Sponsor prizes (AG Grid, APIMatic, Bryntum, Channel3, Render) | Not pursued | A sponsor prize needs real use of that sponsor's tool; bolting one on is the shallow-use trap. Deploy stays on Vercel. |
+
+## Feasibility: dependencies and day-1 fallbacks
+
+The chosen product depends on none of the capabilities docs/competition.md marks unverified (Payouts, Disputes, Subscriptions, Transaction Search, Invoicing, Webhooks). It does depend on Orders and Payments behaviour that I have not run. In competition.md the toolkit tool names `get_order`, `pay_order`, `create_refund`, `get_refund` and the Orders v2 endpoint list are VERIFIED; the exact REST paths for capture read and refund (`GET /v2/payments/captures/{id}`, `POST /v2/payments/captures/{id}/refund`, `GET /v2/payments/refunds/{id}`) are ASSUMPTION from my own knowledge, not an opened page.
+
+| Dependency | Status | If the sandbox refuses on day 1 | The single proving check |
+|---|---|---|---|
+| OAuth client_credentials on sandbox | VERIFIED pattern | Re-create the REST app; confirm sandbox host `api-m.sandbox.paypal.com` and that Alex copied sandbox, not live, keys | token request returns 200 |
+| Create itemised order (`items`, `breakdown`) | Orders create VERIFIED; breakdown rules ASSUMPTION | Drop tax/shipping lines first, then keep only `item_total`; the case logic still works on items | POST returns an order id and an approval link |
+| Buyer approval in browser with the default sandbox personal account | ASSUMPTION (standard flow) | If redirect return fails, poll GET order until `APPROVED` and have the judge paste nothing; if the personal account login fails, create a new sandbox personal account in the dashboard | GET order shows `APPROVED` |
+| Capture | ASSUMPTION | If the capture comes back PENDING, retry with USD and a fresh default business account; if still pending, use the toolkit `pay_order` path | capture status `COMPLETED` |
+| Refund (full and partial) | `create_refund` in toolkit VERIFIED; REST path ASSUMPTION | Try the toolkit `create_refund` tool instead of raw REST | refund status `COMPLETED` and GET refund matches |
+| Model returns schema-valid JSON | Text VERIFIED working; JSON mode and tool calling NOT confirmed | See "Model" below | one call returns JSON that passes the schema |
+
+Kill rule: if capture or refund cannot be made to work by the end of Nov 4 (day 1), stop and test the runner-up (Subscriptions plan translator) the same day. Both depend on the same sandbox account, so if both fail the problem is the account, which is Alex's dashboard check. No labelled mock replaces a failed capability.
+
+## Model
+
+Fixed: `gateway/deepseek/deepseek-v4.1-flash` through Vercel AI Gateway; `LLM_MODEL` is not changed. Text confirmed working; tool calling and image input unconfirmed.
+
+- The core uses neither. Orchestration is server-side: code fetches the order and capture from PayPal, then makes one structured-output call with the message, the policy clauses and the PayPal record, and validates the JSON against a zod schema.
+- If the model's JSON mode is unsupported, the prompt demands a bare JSON object, code parses it, and retries once with the validation error. If it is still invalid, the case goes to the human as "needs review" with no refund proposed. Never a guess.
+- Image input (a photo of a damaged item) is not in the core. Customers' messages are text.
+- The existing repo's agent loop uses tool calling; it is not reused in the main path.
+
+## Reuse from the current repo
+
+Fine to reuse: Next.js on Vercel scaffold, rate limiter, approval-gate and server policy pattern, money-in-cents helpers, error helpers, test setup, `@paypal/agent-toolkit` 1.11.0 (Apache-2.0) where its order and refund tools fit. Must change: delete the mock and canned modes from `src/lib/config.ts` and the PayPal gateway so the product has no mock in its main path; mocks, if any, live under `tests/` only. Invoice code is removed from the product, not left dormant, because the repo must read as a different product. The README states what was built during the submission window (rule: new or significantly updated, with an explanation).
+
+## Demo that a judge can verify
+
+Judge or Alex writes their own refund message. The order exists because the app created it and the judge approved it as the sandbox buyer, so it is not an invented customer. A judge verifies by: (1) the order id, capture id and refund id shown in the app; (2) the same refund visible in the sandbox buyer's and business's PayPal activity; (3) the raw API response and `PayPal-Debug-Id` in the drawer; (4) the arithmetic matching the captured amount. Test credentials for the sandbox buyer go in the submission text (rules require test access, VERIFIED-BROWSER).
+
+## Schedule
 
 | Date | Goal |
 |---|---|
-| Nov 3 | Strategy done (this file). Alex clears NEEDS items 2, 3, 4, 5. |
-| Nov 4 (first build day) | Live URL responding with the first-day slice from the PRD. Pushed repo. |
-| Nov 5 to 6 | Approval gate, send, status watch, reminders, record payment. |
-| Nov 7 | Photo/handwriting input, policy limits, error handling, honest empty states. |
-| Nov 8 | Demo script, sample inputs, seeded sandbox data, rehearse on the live URL. |
-| Nov 9 | Video, README, form text, REVIEW.md. Submission-ready. |
-| Nov 10 to 11 | Buffer, fixes, Alex reads the Devpost rules and reconciles. |
+| Nov 3 | This plan. Alex signs in to the PayPal developer account (NEEDS.md). |
+| Nov 4 | First-day slice, `npm run proof` green, kill-rule decision. |
+| Nov 5 to 6 | Case view, claim extraction, refund computation, gate, receipt. |
+| Nov 7 | Contradiction checks, policy clauses, error states, tests. |
+| Nov 8 | Rehearse on the live URL with unseen messages. |
+| Nov 9 | Video, README, form text. Submission-ready. |
+| Nov 10 to 11 | Buffer. Alex submits; the agent does not. |
 
-Alex submits personally via submit.sh. Nothing in this plan registers, uploads or posts.
+## Assumptions and weaknesses
 
-## Assumptions that would change the choice
-
-1. If the Devpost rules require a specific partner technology for eligibility (UNVERIFIED), recheck. Today no such rule is known.
-2. If judging weights heavily favour agentic commerce specifically, PRD 02 becomes more attractive, but its feasibility problems stand. Reconsider only if a way to run it on REST sandbox appears.
-3. If the sandbox cannot let a payer pay an invoice (UNCONFIRMED: the invoicing pages opened did not mention sandbox behaviour or `recipient_view_url`), the pay leg switches to an Orders v2 checkout link, which is documented (create order with `intent: CAPTURE`, `approve`/`payer-action` link, capture endpoint). The product narrows from "invoice" to "payment request." The idea survives.
-4. If a live URL is not required, effort shifts from hosting polish to the video. If a public open-source repo is required, add a licence (UNVERIFIED rule, cheap to satisfy).
-5. If the rules bar pre-existing code or limit team size, nothing changes: this is a fresh solo build.
-6. If the toolkit cannot run server-side with client ID and secret as the README implies, fall back to direct REST calls from our own tool definitions given to the LLM. This weakens the "partner technology" claim and the PRD would be revised first.
-
-## Unconfirmed technical items (flagged, not designed around)
-
-- Whether `send_invoice` in sandbox emails a sandbox payer inbox and how a judge reaches the payable page. The `recipient_view_url` field was not seen in any page opened. Check the invoicing schema at https://developer.paypal.com/api/invoicing/v2/schema.json before building the pay step.
-- Whether `record_payment_for_invoice` marks an invoice as paid in sandbox. Same schema check.
-- The toolkit README example uses clientId and clientSecret in the TypeScript constructor; `PAYPAL_ACCESS_TOKEN` is used for MCP. Sandbox tokens last about 3 to 8 hours per the README, so the app must refresh tokens.
-- Sandbox access tokens, scope for Invoicing on a default app: not confirmed. Check on day 1 with a single `create_invoice` call.
-- The remote MCP `commerce:true` feature flag is documented for gift cards only. Not used.
-- The quickstart pages that 404ed earlier were not needed. The GitHub README was readable.
+1. Capture and refund paths behave in sandbox as described above (ASSUMPTION until the proof check passes).
+2. Gallery contents are unknown; a refund-focused entry may exist.
+3. Innovation is the weakest criterion; the claim-verification angle must be visible in the first minute of the video.
+4. Judges must do a PayPal sandbox login to create a fresh order; mitigated by a pre-captured order list and a video that shows the whole thing.
+5. Shared sandbox business account: a daily refund cap and the rate limiter stop abuse.
+6. Judging may include automated AI analysis (VERIFIED-BROWSER); the README therefore names real endpoints and files plainly.
