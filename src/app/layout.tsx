@@ -3,8 +3,8 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Billing Desk Agent",
-  description: "Turn a messy job note into a PayPal invoice, behind an approval gate, then chase it until it is paid.",
+  title: "Refund Referee",
+  description: "Checks a customer's refund request against what PayPal recorded, computes what the shop owes, and refunds exactly that after the owner approves.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

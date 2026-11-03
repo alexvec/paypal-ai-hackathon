@@ -1,5 +1,5 @@
 {
-  "name": "billing-desk-agent",
+  "name": "refund-referee",
   "version": "0.1.0",
   "private": true,
   "license": "MIT",
@@ -12,12 +12,11 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "demo:walk": "playwright test --config=playwright.config.ts --workers=1"
+    "proof": "tsx scripts/proof.ts",
+    "demo:walk": "playwright test --config=playwright.config.ts --workers=1",
+    "test:ui": "playwright test --config=tests/ui/playwright.config.ts --workers=1"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^4.0.96",
-    "@ai-sdk/openai": "^4.0.108",
-    "@paypal/agent-toolkit": "^1.11.0",
     "ai": "^7.0.162",
     "next": "^16.4.4",
     "react": "^19.3.1",
@@ -29,7 +28,7 @@
     "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "nock": "^15.0.5",
+    "tsx": "^4.23.15",
     "typescript": "^7.0.2",
     "vitest": "^5.1.0"
   }

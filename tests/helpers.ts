@@ -1,61 +1,34 @@
-import { DEFAULT_POLICY } from "@/lib/policy";
-import type { InvoiceDraft, InvoiceView } from "@/lib/schemas";
-import { PayPalGateway } from "@/lib/paypal/types";
-import { vi } from "vitest";
+import { MockLanguageModelV4 } from "ai/test";
+import type { Claim } from "@/lib/claim";
 
-export const policy = DEFAULT_POLICY;
-export const TODAY = "2026-11-03";
-
-export const draft: InvoiceDraft = {
-  clientName: "Example Bakery",
-  clientEmail: "sam@example.com",
-  currency: "USD",
-  invoiceDate: "2026-10-01",
-  lines: [
-    { description: "Call-out", quantity: 1, unitPrice: "60.00" },
-    { description: "Labour", quantity: 3, unitPrice: "85.00" },
-  ],
-};
-
-export const view = (overrides: Partial<InvoiceView> = {}): InvoiceView => ({
-  id: "INV2-TEST-0001",
-  status: "SENT",
-  number: "0001",
-  currency: "USD",
-  total: "315.00",
-  due: "315.00",
-  invoiceDate: "2026-10-01",
-  paymentDueDate: null,
-  recipientEmail: "sam@example.com",
-  recipientName: "Example Bakery",
-  recipientViewUrl: null,
-  invoicerViewUrl: null,
-  source: "PAYPAL_SANDBOX",
+export const claim = (overrides: Partial<Claim> = {}): Claim => ({
+  language: "English",
+  outcome_wanted: "partial",
+  reason_category: "damaged",
+  reason_summary: "A fictional customer says a mug arrived cracked.",
+  whole_order: false,
+  claimed_items: [{ line_id: "MUG", quantity: 1, customer_words: "the mug" }],
+  asserted_amount: null,
+  asserted_date: null,
+  clauses: [{ id: "C-FAULT", why: "Damage on arrival." }],
+  draft_reply: "Thanks for writing in. The owner will confirm the outcome.",
+  cannot_parse: false,
   ...overrides,
 });
 
-/** A gateway whose write methods are spies, to prove what a guard did or did not let through. */
-export function spyGateway(current: InvoiceView = view()) {
-  return {
-    source: "PAYPAL_SANDBOX",
-    createInvoice: vi.fn(async () => view({ status: "DRAFT" })),
-    getInvoice: vi.fn(async () => current),
-    listInvoices: vi.fn(async () => [current]),
-    sendInvoice: vi.fn(async () => view({ status: "SENT" })),
-    sendReminder: vi.fn(async () => current),
-    recordPayment: vi.fn(async () => view({ status: "PAID", due: "0.00" })),
-  } satisfies PayPalGateway;
+/** A scripted model. Every response is text, as the real model returns. */
+export function scriptedModel(...responses: string[]) {
+  let index = 0;
+  return new MockLanguageModelV4({
+    doGenerate: async () => {
+      const text = responses[Math.min(index, responses.length - 1)];
+      index += 1;
+      return {
+        content: [{ type: "text" as const, text }],
+        finishReason: { unified: "stop" as const, raw: "stop" },
+        usage: { inputTokens: { total: 1, noCache: 1, cacheRead: 0, cacheWrite: 0 }, outputTokens: { total: 1, text: 1, reasoning: 0 } },
+        warnings: [],
+      };
+    },
+  });
 }
-
-export const usage = {
-  inputTokens: { total: 1, noCache: 1, cacheRead: 0, cacheWrite: 0 },
-  outputTokens: { total: 1, text: 1, reasoning: 0 },
-};
-
-/** A finished model step for the AI SDK's mock model. */
-export const stopResult = (text: string) => ({
-  content: [{ type: "text" as const, text }],
-  finishReason: { unified: "stop" as const, raw: undefined },
-  usage,
-  warnings: [],
-});

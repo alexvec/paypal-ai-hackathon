@@ -1,18 +1,9 @@
 import { NextResponse } from "next/server";
-import { publicModes } from "@/lib/config";
-import { sourceLabels } from "@/lib/respond";
+import { connectionStatus } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 
-/** Liveness only. The modes report which keys are configured. No PayPal or model call is made here. */
+/** Variable names only. "connected" means configured: this route calls neither PayPal nor the model. */
 export function GET() {
-  const modes = publicModes();
-  return NextResponse.json({
-    status: "ok",
-    service: "billing-desk-agent",
-    ...sourceLabels(),
-    paypal: modes.paypal,
-    llm: modes.llm,
-    warnings: modes.warnings,
-  });
+  return NextResponse.json({ status: "ok", service: "refund-referee", ...connectionStatus() }, { headers: { "Cache-Control": "no-store" } });
 }
