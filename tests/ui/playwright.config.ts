@@ -16,6 +16,6 @@ export default defineConfig({
     url: "http://localhost:3101/api/health",
     reuseExistingServer: true,
     timeout: 120_000,
-    env: { PAYPAL_CLIENT_ID: "ui-test-only", PAYPAL_CLIENT_SECRET: "ui-test-only" },
+    env: { PAYPAL_CLIENT_ID: "ui-test-only", PAYPAL_CLIENT_SECRET: "ui-test-only", AI_GATEWAY_API_KEY: "ui-test-only" },
   },
 });

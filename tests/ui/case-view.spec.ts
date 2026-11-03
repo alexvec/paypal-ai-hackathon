@@ -92,6 +92,39 @@ test("the case, proposal and receipt render, and the refund posts only the appro
   await page.screenshot({ path: test.info().outputPath("receipt.png"), fullPage: true });
 });
 
+test("the model-only result says no decision was made, and shows no refund controls", async ({ page }) => {
+  await page.route("**/api/extract", (route) =>
+    route.fulfill({
+      json: {
+        model: "gateway/test-model",
+        extraction: { status: "VALID", claim, modelCalls: 1 },
+        unknownClauses: ["C-INVENTED"],
+        refundDecision: null,
+        notice: "Model extraction only. No PayPal record was read and no refund decision was made.",
+      },
+    }),
+  );
+  await page.goto("/");
+  await page.getByTestId("fill-example").click();
+  await expect(page.getByTestId("message")).toHaveValue(/^Fictional example/);
+  await page.getByTestId("read-message").click();
+  await expect(page.getByTestId("extract-notice")).toContainText("No PayPal record was read");
+  await expect(page.getByTestId("claim")).toContainText("one of the mugs");
+  await expect(page.getByTestId("extract-result")).toContainText("C-INVENTED");
+  await expect(page.getByTestId("approve")).toHaveCount(0);
+  await expect(page.getByTestId("outcome")).toHaveCount(0);
+});
+
+test("a needs-review result is shown plainly", async ({ page }) => {
+  await page.route("**/api/extract", (route) =>
+    route.fulfill({ json: { model: "gateway/test-model", extraction: { status: "NEEDS_REVIEW", reason: "The model's response failed validation.", modelCalls: 2 }, unknownClauses: [], refundDecision: null, notice: "Model extraction only. No PayPal record was read and no refund decision was made." } }),
+  );
+  await page.goto("/");
+  await page.getByTestId("message").fill("Fictional: anything.");
+  await page.getByTestId("read-message").click();
+  await expect(page.getByTestId("needs-review")).toContainText("failed validation");
+});
+
 test("a denial offers no approve button", async ({ page }) => {
   await page.route("**/api/orders/TESTORDER0000001", (route) => route.fulfill({ json: { record: record(), debugId: null } }));
   const denied = { ...decision, outcome: "DENY", headline: "The item claimed is not on this order.", arithmetic: null, refundLines: {}, flags: [{ code: "ITEM_NOT_IN_ORDER", detail: "No such line." }] };

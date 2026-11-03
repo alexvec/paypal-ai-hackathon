@@ -13,7 +13,7 @@ Read this first.
 | Part | State |
 |---|---|
 | PayPal sandbox | **Not connected, and never run.** No sandbox keys exist yet. **No real PayPal call has been made.** Every PayPal path is covered only by tests against a stubbed HTTP layer in `tests/`. On the live URL, these routes answer `503 NOT_CONNECTED` and name the missing variables. |
-| AI model | **Real.** `gateway/deepseek/deepseek-v4.1-flash` through Vercel AI Gateway, on `POST /api/extract`. That route reads a message and validates the JSON. It proves the model part only: no PayPal record is read and no refund is decided. |
+| AI model | **Real, on the live URL.** `gateway/deepseek/deepseek-v4.1-flash` through Vercel AI Gateway, on `POST /api/extract`. On 2026-11-03 a fictional message in Spanish came back as schema-valid JSON in one call. That route proves the model part only: no PayPal record is read and no refund is decided. The full case path, which feeds a validated claim into the refund decision, needs PayPal, so it has only run against stubs. |
 
 There is no mock mode and no canned output. When a credential is missing, the app and `npm run proof` say "not connected" and name the variable.
 
