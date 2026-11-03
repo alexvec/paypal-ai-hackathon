@@ -1,0 +1,36 @@
+{
+  "name": "billing-desk-agent",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.9"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "demo:walk": "playwright test --config=playwright.config.ts --workers=1"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "^4.0.96",
+    "@ai-sdk/openai": "^4.0.108",
+    "@paypal/agent-toolkit": "^1.11.0",
+    "ai": "^7.0.162",
+    "next": "^16.4.4",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "nock": "^15.0.5",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  }
+}

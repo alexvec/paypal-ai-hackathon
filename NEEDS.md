@@ -1,15 +1,22 @@
 # NEEDS
 
-What Alex must supply or do personally before the build. Nothing here has been done on Alex's behalf. Sources are in docs/competition.md.
+The agent creates the accounts and keys below. Alex steps in only for a payment card, government ID, a tax form, or a code he must type himself. Do not submit the entry.
+
+What was checked on 2026-11-03, before this rule: GitHub and Vercel were already authenticated. PayPal sandbox keys and an LLM key were missing, and nothing had been created yet.
 
 ## Status at the needs check (2026-11-03)
 
-Checked locally, without registering for or creating anything.
-
 - Available: GitHub push (`gh` logged in as alexvec, `repo` scope) and Vercel deploys (CLI logged in).
-- Missing, Alex must supply: PayPal sandbox client ID and secret (item 3, which needs item 2), and an LLM provider key (item 4). Neither is in this directory or the shell environment.
-- Alex must do personally: Devpost registration (item 1) and the rules checklist below.
-- Decision: the build continues. The product runs in its labelled mock mode until keys arrive, so no missing credential makes it impossible to run. Mock mode is not a submittable demo: the entry needs real keys in the deployed app before Alex films or submits.
+- Tried and not done: the PayPal sandbox app and joining the Devpost hackathon. Both need the browser, and the Chrome extension reported no connected browser on three attempts, with Chrome running.
+- Model access: being tried through Vercel AI Gateway on Alex's own Vercel team, with no pasted key. See the review packet for the result.
+- Limit on the agent: it does not create accounts or type passwords in the browser, even when asked. An account that does not exist yet, or a sign-in screen, is Alex's step.
+- Decision: the build continues in labelled mock mode. Mock mode is not a submittable demo: the entry needs real keys in the deployed app before Alex films or submits.
+
+## Exact remaining steps for Alex
+
+1. Reconnect the Claude extension in Chrome (https://claude.ai/chrome, signed in to the same account as Claude Code) and resume the director. If developer.paypal.com and Devpost are already signed in, the agent can then create the sandbox app and join the hackathon.
+2. Or do it by hand. At https://developer.paypal.com/dashboard/applications/sandbox, sign in or sign up, create a REST app, and put these in the entry's `.env`, using the variable names in `.env.example`: sandbox client ID and secret. Then resume the director, which adds them to Vercel and runs a real sandbox invoice.
+3. Join the hackathon at https://paypalaihackathon.devpost.com/ if the agent could not, and work through the rules checklist below.
 
 ## Accounts and keys
 

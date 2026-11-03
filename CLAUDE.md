@@ -8,7 +8,11 @@ Every commit is authored as Alex Veciana Belmonte <38962279+alexvec@users.norepl
 
 ## Authorization
 
-Nothing is submitted, registered, uploaded, or posted without the operator running submit.sh themselves. That includes the event form, the demo video, Discord, and email. Plans and docs record intent. They are not permission.
+Create every account, key, team, and deployment this entry needs. Use the operator profile at `/Users/alex/Documents/GitHub/hackathon-ops/operator.json`. Store new secrets in `.env`, which stays gitignored. Do not commit them.
+
+Stop and write the exact remaining step in NEEDS.md only when it needs a payment card, government ID, a tax form, or a code or captcha that only the operator can complete after you have tried.
+
+Do not run submit.sh. Do not send the entry form. Do not upload the demo video. Do not post to Discord, Slack, or YouTube. The operator reviews the packet and submits.
 
 Pushing this repository and deploying the app are part of the build.
 
