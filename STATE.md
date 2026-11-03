@@ -12,5 +12,5 @@
 - [x] strategy
 - [x] needs-cleared (PayPal sandbox and LLM keys missing; build continues in labelled mock mode, see NEEDS.md)
 - [x] build (live URL runs in labelled mock PayPal and canned model modes; the real sandbox and real model paths have not run, see README.md)
-- [ ] presentation
+- [x] presentation (docs/submission.md, docs/slides.md, docs/demo-script.md written; statements marked CONFIRM AFTER REAL RUN need a real sandbox and model run, and the video cannot be filmed until then)
 - [ ] verify

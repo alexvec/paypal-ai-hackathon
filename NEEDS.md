@@ -7,7 +7,9 @@ What was checked on 2026-11-03, before this rule: GitHub and Vercel were already
 ## Status at the needs check (2026-11-03)
 
 - Available: GitHub push (`gh` logged in as alexvec, `repo` scope) and Vercel deploys (CLI logged in).
-- Tried and not done: the PayPal sandbox app and joining the Devpost hackathon. Both need the browser, and the Chrome extension reported no connected browser on three attempts, with Chrome running.
+- Tried and not done: the PayPal sandbox app and joining the Devpost hackathon. Both need the browser, and the Chrome extension reported no connected browser, including on a fresh attempt in the follow-up run. The attempt never reached PayPal, so whether a sign-in screen would also block it is unknown. The packet continues in labelled mock mode.
+- Partner credits: docs/competition.md records no promo code. It lists partners offering free credits, with terms and sign-up steps unverified, so nothing was redeemed. Signing up also needs the browser. Whether any credit could pay for model calls is unknown.
+- Card: Alex decided the Vercel AI Gateway card stays with him. The agent adds no card.
 - Model access: tried through Vercel AI Gateway on Alex's own Vercel team, with no pasted key. The gateway refuses calls until a card is on file: "AI Gateway requires a valid credit card on file to service requests." No card was added, so the model stays on labelled canned output.
 - Limit on the agent: it does not create accounts or type passwords in the browser, even when asked. An account that does not exist yet, or a sign-in screen, is Alex's step.
 - Decision: the build continues in labelled mock mode. Mock mode is not a submittable demo: the entry needs real keys in the deployed app before Alex films or submits.
