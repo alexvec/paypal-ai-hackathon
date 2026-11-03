@@ -35,7 +35,7 @@ Time left: the blog says submissions close Nov 12, 2026 (date only, time zone un
 | `npm run build` | Succeeded. Routes: `/`, `/api/agent`, `/api/health`, `/api/invoices`, `/api/invoices/[id]/actions`, `/api/model-check`, `/api/propose`. |
 | `GET /` | HTTP 200. In a browser, the page shows the red banner "MOCK PayPal. No request was sent to PayPal. Invoice ids are fake." and the green banner "Live AI: gateway/deepseek/deepseek-v4.1-flash". |
 | `GET /api/health` | HTTP 200: `paypal: "mock"`, `source: "MOCK"`, `llmSource: "MODEL_CONFIGURED"`, `llm: "configured"`, `warnings: []`. |
-| `GET /api/model-check` | HTTP 200: `llmSource: "LIVE_MODEL"`, `llmModel: "gateway/deepseek/deepseek-v4.1-flash"`, `modelError: null`, checked at 2026-11-03T12:06:28Z. (The first check returned `CANNED` with the gateway card error, before Alex added the card.) |
+| `GET /api/model-check` | HTTP 200: `llmSource: "LIVE_MODEL"`, `llmModel: "gateway/deepseek/deepseek-v4.1-flash"`, `modelError: null`, checked at 2026-11-03T12:06:28Z. Two requests returned the same `checkedAt`, so this route serves a stored result for a time; the `POST /api/propose` below is the fresher proof. (The first check returned `CANNED` with the gateway card error, before Alex added the card.) |
 | `POST /api/propose` with a non-sample text (a made-up plumbing note) | HTTP 200: `llmSource: "LIVE_MODEL"`, `modelError: null`. It proposed three lines from a fictional note, kept source phrases, left labour quantity null for "about two hours", left the unmatched washer kit unpriced, and asked four questions. `source` is still `MOCK`. One note only, so this says nothing about quality in general. |
 | Repo reachable | HTTP 200 on the repo page and on raw `LICENSE`. GitHub reports visibility PUBLIC, license MIT, default branch `main`. LICENSE text begins "MIT License / Copyright (c) 2026 Alex Veciana Belmonte". |
 | Run instructions in repo | README has "Run it locally" (`npm install`, `npm run dev`, works with no configuration in labelled mock modes) and a "Checks" section. |
@@ -57,7 +57,7 @@ Time left: the blog says submissions close Nov 12, 2026 (date only, time zone un
 
 README: accurate and conservative. Its mode table, "Not run yet" column and "Not used" list match the code and the live responses.
 
-docs/submission.md: honest at the top (states mock/canned, lists R1 to R11, "Do not claim" list). Problems:
+docs/submission.md: honest at the top (states which modes are live and which are mock, lists R1 to R11, "Do not claim" list). Problems:
 - The short tagline ("Messy note in, approved PayPal invoice out, then chased.") has no `[CONFIRM]` tag, though nothing real has run. The longer tagline is tagged.
 - "Built with ... Vercel AI Gateway ... " is tagged R11, fine.
 - The paste-ready sentences about the gate, policy, rate-card pricing and tools-held are true of the code and tests. Those are fine.
@@ -111,7 +111,7 @@ Verified-vs-unverified marking: every VERIFIED row I could test is on the blog p
 6. Alex: map the text onto the real form fields and submit with his own submission script. Not run by me.
 7. Agent, small and before submitting: fix the doc nits listed below.
 
-Also unfinished: the deployed model does not run on partner credit, and partner credits were never read or redeemed. NEEDS.md says they must be read on the partner pages before they are skipped.
+Also unfinished: partner credits were never read or redeemed. NEEDS.md says they must be read on the partner pages before they are skipped.
 
 ## Known issues to decide on
 
