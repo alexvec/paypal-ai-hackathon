@@ -104,7 +104,7 @@ They cannot:
 
 ### Known limits
 
-- **Rate limits and the daily refund cap are in memory, per serverless instance.** They reset on a cold start, and several instances each keep their own count. Model calls are limited to 5 per address per 10 minutes and 40 per instance per hour, with at most 2 calls per message and 900 output tokens per call. This slows abuse. It is not a spending limit, which only the gateway account can set.
+- **Rate limits and the daily refund cap are in memory, per serverless instance.** They reset on a cold start, and several instances each keep their own count. Model calls are limited to 5 per address per 10 minutes and 40 per instance per hour, with at most 2 calls per message and 1,500 output tokens per call. This slows abuse. It is not a spending limit, which only the gateway account can set.
 - **Any visitor can approve their own test refund.** That is the demo. The approval gate proves the model cannot move money. It does not model a shop's login, because there is none. A real shop would need one.
 - **The owner cookie is the only proof of ownership.** Clearing it loses access to those orders.
 - **A race between two approvals** on one order, read at the same moment, could both pass the item check. PayPal still refuses anything above the capture's balance.

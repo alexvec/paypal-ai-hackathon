@@ -27,6 +27,28 @@ describe("extractClaim validates what the model returns", () => {
     expect(model.doGenerateCalls).toHaveLength(2);
   });
 
+  it("asks for no reasoning, so reasoning output cannot use up the token limit", async () => {
+    const model = scriptedModel(JSON.stringify(claim()));
+    await extractClaim("Fictional: the mug broke.", lines, model);
+    expect(model.doGenerateCalls[0].reasoning).toBe("none");
+    expect(model.doGenerateCalls[0].maxOutputTokens).toBe(1500);
+  });
+
+  it("does not retry a response cut off at the token limit, and says what came back", async () => {
+    const model = new MockLanguageModelV4({
+      doGenerate: async () => ({
+        content: [{ type: "reasoning" as const, text: "thinking at length" }],
+        finishReason: { unified: "length" as const, raw: "length" },
+        usage: { inputTokens: { total: 1, noCache: 1, cacheRead: 0, cacheWrite: 0 }, outputTokens: { total: 1, text: 0, reasoning: 1 } },
+        warnings: [],
+      }),
+    });
+    const result = await extractClaim("Fictional: the mug broke.", lines, model);
+    expect(model.doGenerateCalls).toHaveLength(1);
+    expect(result).toMatchObject({ status: "NEEDS_REVIEW", modelCalls: 1 });
+    expect(result.status === "NEEDS_REVIEW" && result.reason).toContain("finish reason length, 0 characters of text, 18 of reasoning");
+  });
+
   it("discards any refund amount field the model adds", async () => {
     const model = scriptedModel(JSON.stringify({ ...claim(), refund_amount: "9999.00", approved: true }));
     const result = await extractClaim("Fictional: the mug broke.", lines, model);

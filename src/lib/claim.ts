@@ -5,6 +5,7 @@ import { HttpError } from "./errors";
 import { POLICY_CLAUSES } from "./policy";
 
 export const MAX_MESSAGE_CHARS = 2000;
+const MAX_OUTPUT_TOKENS = 1500;
 
 /** Figures a customer states are claims to check, never instructions. Non-money text becomes null. */
 const assertedAmount = z.preprocess((value) => {
@@ -101,29 +102,34 @@ export type ClaimResult =
 /**
  * One call, plus one retry only if the JSON fails validation. If it still fails, the result is
  * "needs review" and no refund is proposed. JSON mode on this model is unconfirmed, so the prompt
- * asks for bare JSON and zod does the checking.
+ * asks for bare JSON and zod does the checking. A response cut off at the token limit is not retried:
+ * the same limit would cut it off again, on the owner's money.
  */
 export async function extractClaim(message: string, lines: ClaimLine[], model: LanguageModel, context: string | null = null): Promise<ClaimResult> {
   const prompt = buildPrompt(message, lines, context);
   let problem = "";
-  for (let call = 1; call <= 2; call += 1) {
-    let text: string;
+  let calls = 0;
+  while (calls < 2) {
+    calls += 1;
+    let result;
     try {
-      const result = await generateText({
+      result = await generateText({
         model,
         system: SYSTEM,
-        prompt: call === 1 ? prompt : `${prompt}\n\nYour previous response was rejected: ${problem}\nReturn only the corrected JSON object.`,
-        maxOutputTokens: 900,
+        prompt: calls === 1 ? prompt : `${prompt}\n\nYour previous response was rejected: ${problem}\nReturn only the corrected JSON object.`,
+        // This is a reading task. Reasoning output counts against the token limit.
+        reasoning: "none",
+        maxOutputTokens: MAX_OUTPUT_TOKENS,
         maxRetries: 0,
         abortSignal: AbortSignal.timeout(25_000),
       });
-      text = result.text;
     } catch (error) {
       throw new HttpError(502, "MODEL_ERROR", `The model did not answer, so nothing was decided. ${redactSecrets(error instanceof Error ? error.message : String(error)).slice(0, 300)}`);
     }
-    const parsed = parseClaim(text);
-    if (parsed.ok) return { status: "VALID", claim: parsed.claim, modelCalls: call };
-    problem = parsed.error;
+    const parsed = parseClaim(result.text);
+    if (parsed.ok) return { status: "VALID", claim: parsed.claim, modelCalls: calls };
+    problem = `${parsed.error} (finish reason ${result.finishReason}, ${result.text.length} characters of text, ${result.reasoningText?.length ?? 0} of reasoning)`;
+    if (result.finishReason === "length") break;
   }
-  return { status: "NEEDS_REVIEW", reason: `The model's response failed validation twice. ${problem}`.slice(0, 400), modelCalls: 2 };
+  return { status: "NEEDS_REVIEW", reason: `The model's response failed validation. ${problem}`.slice(0, 400), modelCalls: calls };
 }
